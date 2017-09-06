@@ -2,14 +2,14 @@
 
 ## Coding Standards
 ### Determine conventions for code
-#### Tasks:
+##### Tasks:
 - The variables should have a uniform set of naming conventions
 - Creation of new objects/variables should be informative without being verbose
 - other team members should be able to tell the purpose from its name.
 
 ## Datasets
-### The library data is in the following format:
-
+### Library Data
+#### The Library Data is in the following format:
 `machineID, stateID, lastChanged`
 
 This is:
@@ -23,14 +23,15 @@ This is:
  - without a transformation, it is difficult to compare usage states to duration.
  - if table is transformed/expanded to give minutes in use per hour, it will be enormous.
 
- #### Tasks:
+ ##### Tasks:
  - find method for expanding data efficiently
  - enumerate additional comparison data for machines (e.g. location, monitor configuration, availability/hours)
 
-### The weather data is in a verbose format
+### Weather Data
+#### The weather data is in a verbose format
 
 The data in the weather extract is very expansive, and will require some editing to get the data to a usable state.
 
-#### Tasks:
+##### Tasks:
 - determine what data is useful and isolate it.
 - figure out a way to bring the two (or more) sets together
