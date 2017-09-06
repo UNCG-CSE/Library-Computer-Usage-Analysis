@@ -3,43 +3,66 @@
 
 # Weather Data
 
-# In[5]:
+# In[ ]:
 
 
 import numpy as np
 import pandas as pd
 
 
-# In[6]:
+# In[ ]:
 
 
-# gsoDataAll = pd.read_csv(r'../data/1052640.csv',low_memory=False)
+gsoDataAll = pd.read_csv(r'../data/1052640.csv',low_memory=False)
 
 
-# In[7]:
+# In[ ]:
 
 
-# gsoDataAll.columns.values
+gsoDataAll.columns.values
 
 
 # This is just a smaller subset of the columns. Daily and Monthly rollups were ignored. Fahrenheit temps used instead of Celcius.
 
-# In[8]:
+# In[ ]:
 
 
-gsoData = pd.read_csv(r'../data/1052640.csv',usecols = ['DATE', 
-                                                'REPORTTPYE', 'HOURLYSKYCONDITIONS', 'HOURLYVISIBILITY', 
-                                                'HOURLYPRSENTWEATHERTYPE', 'HOURLYDRYBULBTEMPF', 'HOURLYWETBULBTEMPF',
-                                                'HOURLYDewPointTempF', 'HOURLYRelativeHumidity', 'HOURLYWindSpeed',
-                                                'HOURLYWindDirection', 'HOURLYWindGustSpeed', 'HOURLYStationPressure',
-                                                'HOURLYPressureTendency', 'HOURLYPressureChange', 'HOURLYSeaLevelPressure',
-                                                'HOURLYPrecip', 'HOURLYAltimeterSetting'],
-                                                low_memory = False)
+hourlyColumns = ['DATE',
+'REPORTTPYE',
+'HOURLYSKYCONDITIONS',
+'HOURLYVISIBILITY',
+'HOURLYPRSENTWEATHERTYPE',
+'HOURLYDRYBULBTEMPF',
+'HOURLYWETBULBTEMPF',
+'HOURLYDewPointTempF',
+'HOURLYRelativeHumidity',
+'HOURLYWindSpeed',
+'HOURLYWindDirection',
+'HOURLYWindGustSpeed',
+'HOURLYStationPressure',
+'HOURLYPressureTendency',
+'HOURLYPressureChange',
+'HOURLYSeaLevelPressure',
+'HOURLYPrecip',
+'HOURLYAltimeterSetting']
+
+
+# In[ ]:
+
+
+def getWeatherData():
+    return pd.read_csv(r'../data/1052640.csv',usecols = hourlyColumns,low_memory = False)
+
+
+# In[ ]:
+
+
+gsoData = getWeatherData()
 
 
 # Verifying the columns.
 
-# In[9]:
+# In[ ]:
 
 
 gsoData.info()
@@ -47,7 +70,7 @@ gsoData.info()
 
 # The spelling here is frustrating.
 
-# In[10]:
+# In[ ]:
 
 
 gsoData.rename(columns = {'REPORTTPYE':'REPORTTYPE'}, inplace=True)
@@ -55,7 +78,7 @@ gsoData.rename(columns = {'REPORTTPYE':'REPORTTYPE'}, inplace=True)
 
 # These seem to be start of day values:
 
-# In[11]:
+# In[ ]:
 
 
 gsoData[gsoData.REPORTTYPE == 'SOD']
@@ -63,31 +86,31 @@ gsoData[gsoData.REPORTTYPE == 'SOD']
 
 # Dropping **S**tart **O**f **D**ay
 
-# In[12]:
+# In[ ]:
 
 
 gsoDataHourly = gsoData[gsoData.REPORTTYPE != 'SOD']
 
 
-# In[13]:
+# In[ ]:
 
 
 gsoDataHourly.REPORTTYPE.unique()
 
 
-# In[14]:
+# In[ ]:
 
 
 gsoDataHourly.set_index(gsoDataHourly['DATE'].apply(pd.to_datetime),inplace=True)
 
 
-# In[15]:
+# In[ ]:
 
 
 gsoDataHourly = gsoDataHourly.drop('DATE',axis=1)
 
 
-# In[16]:
+# In[ ]:
 
 
 gsoDataHourly.info()
@@ -95,14 +118,14 @@ gsoDataHourly.info()
 
 # ehhh... just for the heck of it...
 
-# In[17]:
+# In[ ]:
 
 
 import matplotlib.pyplot as plt
 get_ipython().magic(u'matplotlib inline')
 
 
-# In[18]:
+# In[ ]:
 
 
 dateTime = gsoDataHourly.index.values
