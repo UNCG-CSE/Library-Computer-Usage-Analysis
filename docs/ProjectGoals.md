@@ -2,6 +2,7 @@
 
 ## Coding Standards
 ### Determine conventions for code
+#### Tasks:
 - The variables should have a uniform set of naming conventions
 - Creation of new objects/variables should be informative without being verbose
 - other team members should be able to tell the purpose from its name.
