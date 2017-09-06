@@ -13,9 +13,9 @@
 `machineName, state, lastChanged`
 
 This is:
--machine (by ID, foreign key in table for name)
--state (by ID, foreign key in table for state name)
--lastChanged (time/datestamp of state change occurrence)
+- machine (by ID, foreign key in table for name)
+- state (by ID, foreign key in table for state name)
+- lastChanged (time/datestamp of state change occurrence)
 
 #### While compact, this presents a number of problems.
  - the data for all machines, and areas, are in a single table.
