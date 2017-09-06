@@ -19,13 +19,16 @@ This is:
 
 #### While compact, this presents a number of problems.
  - the data for all machines, and areas, are in a single table.
- - the data does not have a mechanism for time in individual states.
+ - the data does not have a mechanism for time elapsed in individual states.
  - without a transformation, it is difficult to compare usage states to duration.
  - if table is transformed/expanded to give minutes in use per hour, it will be enormous.
 
  #### Tasks:
  - find method for expanding data efficiently
  - enumerate additional comparison data for machines
+ -- location
+ -- monitor configuration
+ -- availability/hours
 
 ### The weather data is in a verbose format
 
