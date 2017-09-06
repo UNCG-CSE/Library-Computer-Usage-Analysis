@@ -1,5 +1,13 @@
 # Project Goals
 
+
+## Overall goal
+- Allow the user to query the system on information regarding our data and its interactions without having to write new functions every time: Recommend having functions whose names are agreed on and stored in a file somewhere so that we don't all create different ones for the same purpose
+- Put weather data, computer data, schedule data in tables: To this end modeling our system with a simple diagram should be a high priority at the early stage
+- Should allow ability to update/remove data from tables
+- Store information collected in a simple to access format (i.e. put it in a table or file somewhere, don't want to have to comb through the pynotebook every time we want something)
+
+
 ## Coding Standards
 ### Determine conventions for code
 ##### Tasks:
