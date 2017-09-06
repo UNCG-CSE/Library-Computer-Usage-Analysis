@@ -10,10 +10,10 @@
 ## Datasets
 ### The library data is in the following format:
 
-`machineName, state, lastChanged`
+`machineID, stateID, lastChanged`
 
 This is:
-- machine (by ID, foreign key in table for name)
+- machine (by ID, foreign key in table for machine name)
 - state (by ID, foreign key in table for state name)
 - lastChanged (time/datestamp of state change occurrence)
 
