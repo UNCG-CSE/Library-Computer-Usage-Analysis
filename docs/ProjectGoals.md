@@ -26,9 +26,9 @@ This is:
  #### Tasks:
  - find method for expanding data efficiently
  - enumerate additional comparison data for machines
- 1 location
- 2 monitor configuration
- 3 availability/hours
+1 location
+2 monitor configuration
+3 availability/hours
 
 ### The weather data is in a verbose format
 
