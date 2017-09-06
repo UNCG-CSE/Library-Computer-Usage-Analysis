@@ -31,4 +31,4 @@ The data in the weather extract is very expansive, and will require some editing
 
 #### Tasks:
 - determine what data is useful and isolate it.
-- figure out a way to bring the two (or more) sets togethers
+- figure out a way to bring the two (or more) sets together
