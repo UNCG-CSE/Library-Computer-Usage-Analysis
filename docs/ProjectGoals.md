@@ -17,7 +17,7 @@ This is:
 - state (by ID, foreign key in table for state name)
 - lastChanged (time/datestamp of state change occurrence)
 
-#### While compact, this presents a number of problems.
+#### Issues: While compact/simple, this presents a number of problems.
  - the data for all machines, and areas, are in a single table.
  - the data does not have a mechanism for time elapsed in individual states.
  - without a transformation, it is difficult to compare usage states to duration.
@@ -28,9 +28,10 @@ This is:
  - enumerate additional comparison data for machines (e.g. location, monitor configuration, availability/hours)
 
 ### Weather Data
-#### The weather data is in a verbose format
+#### Issues: The weather data is in a verbose format
 
-The data in the weather extract is very expansive, and will require some editing to get the data to a usable state.
+- The data in the weather extract is very expansive.
+- This will require some editing to get the data to a usable state.
 
 ##### Tasks:
 - determine what data is useful and isolate it.
