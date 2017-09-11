@@ -1,8 +1,15 @@
 # Project Goals
 
 ## To Do list
-- 1. Model system (including data types - for example the timestamp for computers should be compatible with the timestamp for any weather event, that is there must be a conversion in place to compare them)
-- 2. Organize weather data into a database system (should agree on constraints for this, therefore must be done after the modeling.
+
+This list is by no means complete.  Items occur in order of dependence on
+previous items.
+
+1. Model system (including data types - for example the timestamp for computers should be compatible with the timestamp for any weather event, that is there must be a conversion in place to compare them)
+2. Organize all data into a database system (should agree on constraints for this).
+    * sqlite would likely be a good candidate for this, since it is a small
+	  non-invasive dependency, and Python ships with sqlite support out of the
+	  box.
 
 ## Overall goal
 - Allow the user to query the system on information regarding our data and its interactions without having to write new functions every time: Recommend having functions whose names are agreed on and stored in a file somewhere so that we don't all create different ones for the same purpose
@@ -34,7 +41,7 @@ This is:
  - without a transformation, it is difficult to compare usage states to duration.
  - if table is transformed/expanded to give minutes in use per hour, it will be enormous.
 
- ##### Tasks:
+##### Tasks:
  - find method for expanding data efficiently
  - enumerate additional comparison data for machines (e.g. location, monitor configuration, availability/hours)
 
