@@ -24,7 +24,7 @@ The University Libraries at UNCG currently track the state of a computer, determ
 ### Assignments
 
 Brown   -label computers. 
-Nick    -
+Nick    -look into Machine Learning - what would be needed?
 Michael -find feasibility of SQL tables vs. Pandas dataframe
-Patti   -
+Patti   -code editing/ documentation/ testing
     
