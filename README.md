@@ -3,7 +3,9 @@ The University Libraries at UNCG currently track the state of a computer, determ
 
 ## Primary goals:
 ### Basic Tasks
-    1. Calculate total time computer in use per day, per semester, etc.
+    1.a Calculate total time computer in use per hour, 
+    1.b "" per day,
+    1.c "" per semester
     2. Compare 1) against frequency of inclement rainfall
     3. Compare 1) against times of exams
     4. Compare 1) against libary populaton
