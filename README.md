@@ -5,18 +5,26 @@ The University Libraries at UNCG currently track the state of a computer, determ
 ### Basic Tasks
     1.a Calculate total time computer in use per hour, 
     1.b "" per day,
-    1.c "" per semester
+    1.c "" per week,
+    1.d "" per semester
     2. Compare 1) against frequency of inclement rainfall
-    3. Compare 1) against times of exams
+    3. Compare 1) against times/days/weeks of exams
     4. Compare 1) against libary populaton
    
 ### Further Tasks
     1. Label each computer with terms 'window', 'dual monitor', 'quiet floor', or any combination of the three.
     2. Run all the above tasks on each seperate category of computer.
+    3. Graph all the above data together? Draw conclusions: Which computers are used most often and when? Does weather affect how often/how much computers are used?
     
-### Even more tasks
-    1. Graph all the above data together? Draw conclusions: Which computers are used most often and when? Does weather affect how often/how much computers are used?
+### Over-the-top tasks
+    1. Make a heat map of 'best' computers
+    2. Machine Learning - predict which computers will be used when and how often
     
  
+### Assignments
 
+Brown   -label computers. 
+Nick    -
+Michael -find feasibility of SQL tables vs. Pandas dataframe
+Patti   -
     
