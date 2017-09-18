@@ -13,7 +13,7 @@ The University Libraries at UNCG currently track the state of a computer, determ
     2. Run all the above tasks on each seperate category of computer.
     
 ### Even more tasks
-    1. Graph all the above data together? Draw conclusions: Which computers are used most often and when?
+    1. Graph all the above data together? Draw conclusions: Which computers are used most often and when? Does weather affect how often/how much computers are used?
     
  
 
