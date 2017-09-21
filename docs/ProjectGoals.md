@@ -16,7 +16,13 @@ previous items.
 - Put weather data, computer data, schedule data in tables: To this end modeling our system with a simple diagram should be a high priority at the early stage
 - Should allow ability to update/remove data from tables
 - Store information collected in a simple to access format (i.e. put it in a table or file somewhere, don't want to have to comb through the pynotebook every time we want something)
-
+- Predictive modeling: create a model to predict usage patterns based on available data.
+    + We should be able to test this model in real time by using weather forecasts (and
+	  any other relevant data), or alternatively, using strictly posterior analyses,
+	  and test the results against actual recorded outcomes.
+	+ This will allow us to guage how complete our observations are.  If the model is
+	  wildly innacurate, this suggests that we aren't accounting for the main factors
+	  affecting actual usage.
 
 ## Coding Standards
 ### Determine conventions for code
