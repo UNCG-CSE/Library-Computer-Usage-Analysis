@@ -32,6 +32,8 @@ useData = pd.read_csv(r'../data/170830_StateData.csv')
 useData.head()
 
 
+# This is an interesting exercise demonstrating that there are occurrences that evaluated to having occurred at the exact same millisecond.
+
 # In[ ]:
 
 useData[pd.to_datetime(useData.dateStamp).duplicated(keep=False)]
@@ -49,11 +51,11 @@ useData.dateStamp = useData.dateStamp.apply(pd.to_datetime)
 useData.info()
 
 
-# Testing functionality with a single computer. Working with iterating across the numpy array later.
+# Testing functionality with a single computer. Working with iterating across the DataFrame later.
 
 # In[ ]:
 
-computerDataName = 'CRR005'
+computerDataName = 'CITI002'
 
 
 # In[ ]:
@@ -111,13 +113,25 @@ computerTimeArrayPerHour = computerTimeArrayMin.resample('H').sum()
 computerTimeArrayPerHour
 
 
-# In[ ]:
-
-computerNames = useData.iloc[:,0].unique()
-
+# This is a matrix of the datestamp times as the index, computers as the columns, and the state change at the intersection.
 
 # In[ ]:
 
-for i in computerNames.tolist():
-    print i
+fullMatrix = useData.pivot(index='dateStamp',columns='computerName',values='state').sort_index()
+
+
+# In[ ]:
+
+fullMatrix
+
+
+# While this gets the dataframe into the preferred format, it causes problems with resampling later. It appears that the resampling method looks at the value at the first datestamp that matches a particular minute. If there are multiple entries at that minute, it takes the value of the first one, and applies it for the whole minute.
+
+# In[ ]:
+
+def inUseConvert(state):
+    if state == 'in-use':
+        return 1
+    else:
+        return 0
 
