@@ -5,35 +5,24 @@
 
 # In[ ]:
 
-
 import numpy as np
 import pandas as pd
 
 
 # In[ ]:
 
-
-gsoDataAll = pd.read_csv(r'../data/1052640.csv',low_memory=False)
+#Defining variables. hourlyColumns may be altered later, but this is what we are using for now
 
 
 # In[ ]:
-
-
-gsoDataAll.columns.values
-
-
-# This is just a smaller subset of the columns. Daily and Monthly rollups were ignored. Fahrenheit temps used instead of Celcius.
-
-# In[ ]:
-
 
 hourlyColumns = ['DATE',
 'REPORTTPYE',
 'HOURLYSKYCONDITIONS',
 'HOURLYVISIBILITY',
 'HOURLYPRSENTWEATHERTYPE',
-'HOURLYDRYBULBTEMPF',
 'HOURLYWETBULBTEMPF',
+'HOURLYDRYBULBTEMPF',
 'HOURLYDewPointTempF',
 'HOURLYRelativeHumidity',
 'HOURLYWindSpeed',
@@ -49,15 +38,48 @@ hourlyColumns = ['DATE',
 
 # In[ ]:
 
-
-def getWeatherData():
-    return pd.read_csv(r'../data/1052640.csv',usecols = hourlyColumns,low_memory = False)
+#Defining functions - all together so we can see them and know what we have to work with
+# without scrolling through entire program
 
 
 # In[ ]:
 
+def getAllWeatherData():
+    return pd.read_csv(r'../data/1052640.csv',low_memory=False)
 
-gsoData = getWeatherData()
+
+# In[ ]:
+
+def getHourlyWeatherData():
+    return pd.read_csv(r'../data/1052640.csv',usecols = hourlyColumns, low_memory = False)
+
+
+# In[ ]:
+
+def displayWeatherData(array):
+    print array.columns.values
+
+
+# In[ ]:
+
+#delaring variables from the functions - don't need to know exactly what is in them to use them
+gsoDataAll = getAllWeatherData()
+gsoDataHours = getHourlyWeatherData()
+
+
+# In[ ]:
+
+#How to use the display method
+displayWeatherData(gsoDataAll)
+displayWeatherData(gsoDataHours)
+
+
+# This is just a smaller subset of the columns. Daily and Monthly rollups were ignored. Fahrenheit temps used instead of Celcius.
+
+# In[ ]:
+
+
+gsoData = getHourlyWeatherData()
 
 
 # Verifying the columns.
@@ -82,36 +104,32 @@ gsoData.rename(columns = {'REPORTTPYE':'REPORTTYPE'}, inplace=True)
 
 
 gsoData[gsoData.REPORTTYPE == 'SOD']
+    
 
 
 # Dropping **S**tart **O**f **D**ay
 
 # In[ ]:
 
-
 gsoDataHourly = gsoData[gsoData.REPORTTYPE != 'SOD']
 
 
 # In[ ]:
-
 
 gsoDataHourly.REPORTTYPE.unique()
 
 
 # In[ ]:
 
-
 gsoDataHourly.set_index(gsoDataHourly['DATE'].apply(pd.to_datetime),inplace=True)
 
 
 # In[ ]:
 
-
 gsoDataHourly = gsoDataHourly.drop('DATE',axis=1)
 
 
 # In[ ]:
-
 
 gsoDataHourly.info()
 
@@ -120,13 +138,11 @@ gsoDataHourly.info()
 
 # In[ ]:
 
-
 import matplotlib.pyplot as plt
 get_ipython().magic(u'matplotlib inline')
 
 
 # In[ ]:
-
 
 dateTime = gsoDataHourly.index.values
 tempWetBulbInF = gsoDataHourly.loc[:,'HOURLYWETBULBTEMPF'].values
