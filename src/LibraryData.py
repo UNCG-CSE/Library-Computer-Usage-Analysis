@@ -12,7 +12,6 @@
 
 # In[ ]:
 
-
 import numpy as np
 import pandas as pd
 print "This should be '0.20.1':"
@@ -25,34 +24,46 @@ print "numpy:          " + str(np.__version__)
 
 # In[ ]:
 
+useData = pd.read_csv(r'../data/170830_StateData.csv')
 
-useData = pd.read_csv(r'../data/170830_StateData.csv',parse_dates=[3])
-
-
-# Verifying the status of the columns. 'datastamp' should be a datetime64 field.
 
 # In[ ]:
 
+useData.head()
+
+
+# This is an interesting exercise demonstrating that there are occurrences that evaluated to having occurred at the exact same millisecond.
+
+# In[ ]:
+
+useData[pd.to_datetime(useData.dateStamp).duplicated(keep=False)]
+
+
+# Verifying the status of the columns. 'dataStamp' should be a datetime64 field.
+
+# In[ ]:
+
+useData.dateStamp = useData.dateStamp.apply(pd.to_datetime)
+
+
+# In[ ]:
 
 useData.info()
 
 
-# Testing functionality with a single computer. Working with iterating across the numpy array later.
+# Testing functionality with a single computer. Working with iterating across the DataFrame later.
 
 # In[ ]:
 
-
-computerDataName = 'CRR005'
-
-
-# In[ ]:
-
-
-computerTimeArray = useData[useData.machineName == computerDataName]
+computerDataName = 'CITI002'
 
 
 # In[ ]:
 
+computerTimeArray = useData[useData.computerName == computerDataName]
+
+
+# In[ ]:
 
 computerTimeArray
 
@@ -63,28 +74,24 @@ computerTimeArray
 
 # In[ ]:
 
-
 computerTimeArray.loc[:,'state'] = pd.Series(computerTimeArray.state == 'in-use')
 
 
 # Location data is irrelevant for a machine at this point. Also, location can be derived from machine name, machine location is (at this point) not that precise.
 # 
-# Pandas was giving a duplicate error due to the three non- 'in-use' states occurring simultaneously. Dropping unused columns for data duplication (machinename and location), and dropping timestamp duplications.
+# The duplicates with regard to the indexing is no longer an issue. Since the dateStamp field before only had 'minute' precision, this has been fixed by importing data with 'millisecond' precision.
 
 # In[ ]:
 
-
-computerTimeArray = computerTimeArray.loc[:,'state':'datestamp'].drop_duplicates()
-
-
-# In[ ]:
-
-
-computerTimeArray = computerTimeArray.set_index('datestamp').sort_index()
+computerTimeArray
 
 
 # In[ ]:
 
+computerTimeArray = computerTimeArray.set_index('dateStamp').sort_index()
+
+
+# In[ ]:
 
 computerTimeArray
 
@@ -93,31 +100,38 @@ computerTimeArray
 
 # In[ ]:
 
-
 computerTimeArrayMin = computerTimeArray.resample('T').ffill()
 
 
 # In[ ]:
-
 
 computerTimeArrayPerHour = computerTimeArrayMin.resample('H').sum()
 
 
 # In[ ]:
 
-
 computerTimeArrayPerHour
 
 
-# In[ ]:
-
-
-computerNames = useData.iloc[:,0].unique()
-
+# This is a matrix of the datestamp times as the index, computers as the columns, and the state change at the intersection.
 
 # In[ ]:
 
+fullMatrix = useData.pivot(index='dateStamp',columns='computerName',values='state').sort_index()
 
-for i in computerNames.tolist():
-    print i
+
+# In[ ]:
+
+fullMatrix
+
+
+# While this gets the dataframe into the preferred format, it causes problems with resampling later. It appears that the resampling method looks at the value at the first datestamp that matches a particular minute. If there are multiple entries at that minute, it takes the value of the first one, and applies it for the whole minute.
+
+# In[ ]:
+
+def inUseConvert(state):
+    if state == 'in-use':
+        return 1
+    else:
+        return 0
 
