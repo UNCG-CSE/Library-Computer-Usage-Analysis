@@ -12,7 +12,6 @@
 
 # In[ ]:
 
-
 import numpy as np
 import pandas as pd
 print("This should be '0.20.1':")
@@ -109,13 +108,6 @@ computerTimeArrayPerHour = computerTimeArrayMin.resample('H').sum()
 computerTimeArrayPerHour
 
 
-# In[ ]:
-
-
-for i in computerNames.tolist():
-    print(i)
-
-
 # ## Alternative method of computing per-machine utilization
 
 # In[ ]:
@@ -181,15 +173,12 @@ def usageIntervalsToPercentUtilization(binned, period='h'):
             return list(zip([start] + list(periods), [first] + ([pd.Timedelta('1' + period)] * (len(periods) - 1)) + [last]))
 
     def concat(lists):
-        return functools.reduce(lambda x, y: x + y, lists)
+        return [] if len(lists)==0 else functools.reduce(lambda x, y: x + y, lists)
 
-    def nameAndDateRangeToDataFrame(name, dateRanges):
-        if len(dateRanges) == 0:
-            # Use [] as a null value.
-            return []
+    def dateRangeToDataFrame(dateRanges):
         # Convert each date range into a list of (timestamp,timerange) where each timestamp
         # corresponds to a period within the timerange.
-        next_ = concat(map(lambda x: dateRangeToPeriodUtilization(x[0], x[1]), dateRanges))
+        next_ = concat(list(map(lambda x: dateRangeToPeriodUtilization(x[0], x[1]), dateRanges)))
         # Group and sum times by period to remove duplicate periods, which would happen if
         # we have multiple timeranges within a period, e.g. if we have two entries
         # ('2017-08-31 09:02:00', '+00:05:00') and ('2017-08-31 09:10:00', '+00:13:00').
@@ -201,16 +190,31 @@ def usageIntervalsToPercentUtilization(binned, period='h'):
                 dic[x] += y
         # Group the results into a pair of ([timestamp],[timerange]) with unique timestamps.
         z = list(zip(*dic.items()))
-        utilization = [x / pd.Timedelta(1, unit=period) for x in z[1]]
-        df = pd.DataFrame({'Date': pd.Series(z[0]), name: pd.Series(utilization)}).set_index('Date')
-        return [df]
+        # return a value of type [(timestamp, double)]
+        return [(x, y / pd.Timedelta(1, unit=period)) for (x, y) in dic.items()]
 
-    dfs = concat(map(lambda x: nameAndDateRangeToDataFrame(x[0], x[1]), binned.items()))
-    return functools.reduce(lambda x, y: x.join(y, how='outer'), dfs)
-    #return list(map(lambda x: x[1], binned.items()))
+    # utilization has type [(name, [(timestamp, double)])]
+    utilization = [(x, dateRangeToDataFrame(y)) for (x, y) in binned.items()]
+    # get the unique list of timestamps in the data set
+    all_timestamps = map(lambda x: map(lambda y: y[0], x[1]), utilization)
+    unique_timestamps = functools.reduce(lambda x, y: set(list(x) + list(y)), all_timestamps, set([]))
+    sorted_timestamps = sorted(unique_timestamps)
+    # sorted_timestamps has type [timestamp]
+    # add a bogus (timestamp, 0.0) value for each unique timestamp to the data for each computer
+    bogus = [(x, 0.0) for x in sorted_timestamps]
+    bogus_utilization = [(x, y + bogus) for (x, y) in utilization]
+    # now, per computer, group data by timestamp.  each group will contain at most one valid (i.e. measured)
+    # data point, and one bogus data point.
+    groups = [(x, itertools.groupby(sorted(y, key=lambda z: z[0]), key=lambda z: z[0])) for (x, y) in bogus_utilization]
+    # groups has type [(name, [(timestamp, [(timestamp, double)])])]
+    # for each computer, select the entry in each group representing the higher utilization.  the only
+    # options within each group are actual reported utilization, or zero.  so if the machine was used,
+    # the number we're looking for is the only non-zero value.
+    full_utilization = [(x, [sorted(w, key=lambda v: v[1], reverse=True)[0][1] for (_, w) in group]) for (x, group) in groups]
+    return pd.DataFrame(dict(full_utilization), index=sorted_timestamps)
 
 utilization = usageIntervalsToPercentUtilization(toUsageIntervals(useData))
-utilization.fillna(value=0, inplace=True)
+utilization
 
 
 # In[ ]:
