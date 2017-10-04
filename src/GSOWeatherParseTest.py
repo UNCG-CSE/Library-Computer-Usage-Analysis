@@ -21,6 +21,8 @@ from metar import Metar
 # In[ ]:
 
 
+####THIS IS A TEST SAMPLE LOOKING AT WHAT PYTHON_METAR CAN DO####
+
 # A sample METAR report
 code = "METAR KEWR 111851Z VRB03G19KT 2SM R04R/3000VP6000FT TSRA BR FEW015 BKN040CB BKN065 OVC200 22/22 A2987 RMK AO2 PK WND 29028/1817 WSHFT 1812 TSB05RAB22 SLP114 FRQ LTGICCCCG TS OHD AND NW-N-E MOV NE P0013 T02270215"
 
@@ -98,6 +100,18 @@ print("-----------------------------------------------------------------------\n
 # In[ ]:
 
 
+code = "METAR KEWR 111851Z VRB03G19KT 2SM R04R/3000VP6000FT TSRA BR FEW015 BKN040CB BKN065 OVC200 22/22 A2987 RMK AO2 PK WND 29028/1817 WSHFT 1812 TSB05RAB22 SLP114 FRQ LTGICCCCG TS OHD AND NW-N-E MOV NE P0013 T02270215"
+obs = Metar.Metar(code)
+
+# The present_weather() method summarizes the weather description (rain, etc.)
+print("weather: %s" % obs.present_weather())
+# The sky_conditions() method summarizes the cloud-cover observations.
+print("sky: %s" % obs.sky_conditions("\n     "))
+
+
+# In[ ]:
+
+
 df=pd.read_csv(r'../data/1052640.csv')
 
 
@@ -111,7 +125,7 @@ df1
 # In[ ]:
 
 
-#import re
+#reformat the object to remove whitespace and colon
 df20 = re.sub(r'(\d)\s+(\d)', r'\1\2', df1)
 df20 = re.sub('\:', '', df20)
 df20
@@ -120,6 +134,7 @@ df20
 # In[ ]:
 
 
+#run object in the metar function
 obs = Metar.Metar(df20)
 print obs.string()
 
@@ -127,11 +142,27 @@ print obs.string()
 # In[ ]:
 
 
-code = "METAR KEWR 111851Z VRB03G19KT 2SM R04R/3000VP6000FT TSRA BR FEW015 BKN040CB BKN065 OVC200 22/22 A2987 RMK AO2 PK WND 29028/1817 WSHFT 1812 TSB05RAB22 SLP114 FRQ LTGICCCCG TS OHD AND NW-N-E MOV NE P0013 T02270215"
-obs = Metar.Metar(code)
+df[(df['REPORTTPYE'] == 'FM-15')]
 
-# The present_weather() method summarizes the weather description (rain, etc.)
-print("weather: %s" % obs.present_weather())
-# The sky_conditions() method summarizes the cloud-cover observations.
-print("sky: %s" % obs.sky_conditions("\n     "))
+
+# In[ ]:
+
+
+df.REPORTTPYE.unique()
+
+
+# In[ ]:
+
+
+#Make REPORTTYPE just integer, this may help later on during if we have to do normalization and analysis with reporttype
+df.REPORTTPYE.replace(['FM-12', 'FM-15', 'FM-16', 'SOD', 'SY-MT'], [12, 15, 16, 1, 2], inplace=True)
+df
+
+
+# In[ ]:
+
+
+#Make REPORTTYPE just string , this makes it very easy to read and understand now
+df.REPORTTPYE.replace(['FM-12', 'FM-15', 'FM-16', 'SOD', 'SY-MT'], ['SYNOP Report FLS', 'METAR Aviation routine', 'SPECI Aviation SWR', 'Summary of day report', 'Synoptic and METAR MR'], inplace=True)
+df
 

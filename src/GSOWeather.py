@@ -1,20 +1,29 @@
 
 # coding: utf-8
 
-# Weather Data
+# # GSOWeather
+# 
+# ## Objectives:
+# ### Plot any hourly weather condition over time
+# 
+#     
+# 
 
-# In[ ]:
+# In[78]:
+
 
 import numpy as np
 import pandas as pd
 
 
-# In[ ]:
+# In[79]:
+
 
 #Defining variables. hourlyColumns may be altered later, but this is what we are using for now
 
 
-# In[ ]:
+# In[80]:
+
 
 hourlyColumns = ['DATE',
 'REPORTTPYE',
@@ -36,38 +45,44 @@ hourlyColumns = ['DATE',
 'HOURLYAltimeterSetting']
 
 
-# In[ ]:
+# In[81]:
+
 
 #Defining functions - all together so we can see them and know what we have to work with
 # without scrolling through entire program
 
 
-# In[ ]:
+# In[82]:
+
 
 def getAllWeatherData():
     return pd.read_csv(r'../data/1052640.csv',low_memory=False)
 
 
-# In[ ]:
+# In[83]:
+
 
 def getHourlyWeatherData():
     return pd.read_csv(r'../data/1052640.csv',usecols = hourlyColumns, low_memory = False)
 
 
-# In[ ]:
+# In[84]:
+
 
 def displayWeatherData(array):
     print array.columns.values
 
 
-# In[ ]:
+# In[85]:
+
 
 #delaring variables from the functions - don't need to know exactly what is in them to use them
 gsoDataAll = getAllWeatherData()
 gsoDataHours = getHourlyWeatherData()
 
 
-# In[ ]:
+# In[86]:
+
 
 #How to use the display method
 displayWeatherData(gsoDataAll)
@@ -76,7 +91,8 @@ displayWeatherData(gsoDataHours)
 
 # This is just a smaller subset of the columns. Daily and Monthly rollups were ignored. Fahrenheit temps used instead of Celcius.
 
-# In[ ]:
+# In[87]:
+
 
 
 gsoData = getHourlyWeatherData()
@@ -84,7 +100,8 @@ gsoData = getHourlyWeatherData()
 
 # Verifying the columns.
 
-# In[ ]:
+# In[88]:
+
 
 
 gsoData.info()
@@ -92,15 +109,26 @@ gsoData.info()
 
 # The spelling here is frustrating.
 
-# In[ ]:
+# In[89]:
+
 
 
 gsoData.rename(columns = {'REPORTTPYE':'REPORTTYPE'}, inplace=True)
 
 
+# Changing REPORTTYPE values
+# SYNOP Report FLS (Fixed Land Station), METAR Aviation Routine, SPECI Aviation SWR (Special Weather Report), Synoptic and METAR MR (Merged Report)
+
+# In[90]:
+
+
+gsoData.REPORTTYPE.replace(['FM-12', 'FM-15', 'FM-16', 'SY-MT'], ['SYNOP Report FLS', 'METAR Aviation Routine', 'SPECI Aviation SWR', 'Synoptic and METAR MR'], inplace=True)
+
+
 # These seem to be start of day values:
 
-# In[ ]:
+# In[91]:
+
 
 
 gsoData[gsoData.REPORTTYPE == 'SOD']
@@ -109,40 +137,47 @@ gsoData[gsoData.REPORTTYPE == 'SOD']
 
 # Dropping **S**tart **O**f **D**ay
 
-# In[ ]:
+# In[92]:
+
 
 gsoDataHourly = gsoData[gsoData.REPORTTYPE != 'SOD']
 
 
-# In[ ]:
+# In[93]:
+
 
 gsoDataHourly.REPORTTYPE.unique()
 
 
-# In[ ]:
+# In[94]:
+
 
 gsoDataHourly.set_index(gsoDataHourly['DATE'].apply(pd.to_datetime),inplace=True)
 
 
-# In[ ]:
+# In[95]:
+
 
 gsoDataHourly = gsoDataHourly.drop('DATE',axis=1)
 
 
-# In[ ]:
+# In[96]:
+
 
 gsoDataHourly.info()
 
 
 # ehhh... just for the heck of it...
 
-# In[ ]:
+# In[97]:
+
 
 import matplotlib.pyplot as plt
 get_ipython().magic(u'matplotlib inline')
 
 
-# In[ ]:
+# In[98]:
+
 
 dateTime = gsoDataHourly.index.values
 tempWetBulbInF = gsoDataHourly.loc[:,'HOURLYWETBULBTEMPF'].values
