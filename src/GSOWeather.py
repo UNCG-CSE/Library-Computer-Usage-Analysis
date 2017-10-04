@@ -1,148 +1,73 @@
 
 # coding: utf-8
 
-# Weather Data
+# # GSOWeather
+# 
+# ## Objectives:
+# ### Plot any hourly weather condition over time
+# 
+#     
+# 
 
-# In[ ]:
+# In[1]:
 
 import numpy as np
 import pandas as pd
+import GSOWeather
 
 
-# In[ ]:
+# In[9]:
 
-#Defining variables. hourlyColumns may be altered later, but this is what we are using for now
-
-
-# In[ ]:
-
-hourlyColumns = ['DATE',
-'REPORTTPYE',
-'HOURLYSKYCONDITIONS',
-'HOURLYVISIBILITY',
-'HOURLYPRSENTWEATHERTYPE',
-'HOURLYWETBULBTEMPF',
-'HOURLYDRYBULBTEMPF',
-'HOURLYDewPointTempF',
-'HOURLYRelativeHumidity',
-'HOURLYWindSpeed',
-'HOURLYWindDirection',
-'HOURLYWindGustSpeed',
-'HOURLYStationPressure',
-'HOURLYPressureTendency',
-'HOURLYPressureChange',
-'HOURLYSeaLevelPressure',
-'HOURLYPrecip',
-'HOURLYAltimeterSetting']
+gsoDataAll = GSOWeather.parseWeatherData('../data/1052640.csv')
 
 
-# In[ ]:
-
-#Defining functions - all together so we can see them and know what we have to work with
-# without scrolling through entire program
-
-
-# In[ ]:
-
-def getAllWeatherData():
-    return pd.read_csv(r'../data/1052640.csv',low_memory=False)
-
-
-# In[ ]:
-
-def getHourlyWeatherData():
-    return pd.read_csv(r'../data/1052640.csv',usecols = hourlyColumns, low_memory = False)
-
-
-# In[ ]:
+# In[6]:
 
 def displayWeatherData(array):
     print array.columns.values
 
 
-# In[ ]:
-
-#delaring variables from the functions - don't need to know exactly what is in them to use them
-gsoDataAll = getAllWeatherData()
-gsoDataHours = getHourlyWeatherData()
-
-
-# In[ ]:
+# In[10]:
 
 #How to use the display method
 displayWeatherData(gsoDataAll)
-displayWeatherData(gsoDataHours)
 
 
 # This is just a smaller subset of the columns. Daily and Monthly rollups were ignored. Fahrenheit temps used instead of Celcius.
 
-# In[ ]:
+# In[15]:
 
-
-gsoData = getHourlyWeatherData()
+gsoDataHourly = GSOWeather.hourlyWeatherOnly(gsoDataAll)
 
 
 # Verifying the columns.
 
-# In[ ]:
-
-
-gsoData.info()
-
-
-# The spelling here is frustrating.
-
-# In[ ]:
-
-
-gsoData.rename(columns = {'REPORTTPYE':'REPORTTYPE'}, inplace=True)
-
-
-# These seem to be start of day values:
-
-# In[ ]:
-
-
-gsoData[gsoData.REPORTTYPE == 'SOD']
-    
-
-
-# Dropping **S**tart **O**f **D**ay
-
-# In[ ]:
-
-gsoDataHourly = gsoData[gsoData.REPORTTYPE != 'SOD']
-
-
-# In[ ]:
-
-gsoDataHourly.REPORTTYPE.unique()
-
-
-# In[ ]:
-
-gsoDataHourly.set_index(gsoDataHourly['DATE'].apply(pd.to_datetime),inplace=True)
-
-
-# In[ ]:
-
-gsoDataHourly = gsoDataHourly.drop('DATE',axis=1)
-
-
-# In[ ]:
+# In[16]:
 
 gsoDataHourly.info()
 
 
+# The spelling here is frustrating.
+
+# In[17]:
+
+gsoDataHourly.REPORTTYPE.unique()
+
+
+# In[19]:
+
+gsoDataHourly
+
+
 # ehhh... just for the heck of it...
 
-# In[ ]:
+# In[20]:
 
 import matplotlib.pyplot as plt
-get_ipython().magic(u'matplotlib inline')
+get_ipython().magic('matplotlib inline')
 
 
-# In[ ]:
+# In[21]:
 
 dateTime = gsoDataHourly.index.values
 tempWetBulbInF = gsoDataHourly.loc[:,'HOURLYWETBULBTEMPF'].values
