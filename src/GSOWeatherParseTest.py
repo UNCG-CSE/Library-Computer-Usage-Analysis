@@ -127,7 +127,7 @@ df1
 
 #reformat the object to remove whitespace and colon
 df20 = re.sub(r'(\d)\s+(\d)', r'\1\2', df1)
-df20 = re.sub('\:', '', df20)
+df20 = re.sub(r'\:', '', df20)
 df20
 
 
@@ -142,27 +142,42 @@ print obs.string()
 # In[ ]:
 
 
-df[(df['REPORTTPYE'] == 'FM-15')]
+top = df.head(5)
+top
 
 
 # In[ ]:
 
 
-df.REPORTTPYE.unique()
+#top['HOURLYSKYCONDITIONS'] = re.sub(r'(\d)\s+(\d)', r'\1\2', top['HOURLYSKYCONDITIONS'])
+#top['HOURLYSKYCONDITIONS'] = re.sub('\:', '', top['HOURLYSKYCONDITIONS'])
+#top['HOURLYSKYCONDITIONS'] = top['HOURLYSKYCONDITIONS'].map(lambda x: x.sub(r'(\d)\s+(\d)', r'\1\2').sub('\:', ''))
+
+new = top['HOURLYSKYCONDITIONS'].str.replace(r'\:', '')
+top['HOURLYSKYCONDITIONS'] = new.str.replace(r'(\d)\s+(\d)', r'\1\2')
+top
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+#df[(df['REPORTTPYE'] == 'FM-15')]
+#df.REPORTTPYE.unique()
 
 
 # In[ ]:
 
 
 #Make REPORTTYPE just integer, this may help later on during if we have to do normalization and analysis with reporttype
-df.REPORTTPYE.replace(['FM-12', 'FM-15', 'FM-16', 'SOD', 'SY-MT'], [12, 15, 16, 1, 2], inplace=True)
-df
-
-
-# In[ ]:
-
-
+#df.REPORTTPYE.replace(['FM-12', 'FM-15', 'FM-16', 'SOD', 'SY-MT'], [12, 15, 16, 1, 2], inplace=True)
+#df
 #Make REPORTTYPE just string , this makes it very easy to read and understand now
-df.REPORTTPYE.replace(['FM-12', 'FM-15', 'FM-16', 'SOD', 'SY-MT'], ['SYNOP Report FLS', 'METAR Aviation routine', 'SPECI Aviation SWR', 'Summary of day report', 'Synoptic and METAR MR'], inplace=True)
-df
+#df.REPORTTPYE.replace(['FM-12', 'FM-15', 'FM-16', 'SOD', 'SY-MT'], ['SYNOP Report FLS', 'METAR Aviation routine', 'SPECI Aviation SWR', 'Summary of day report', 'Synoptic and METAR MR'], inplace=True)
+#df
 
