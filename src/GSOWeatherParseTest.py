@@ -100,43 +100,7 @@ print("-----------------------------------------------------------------------\n
 # In[ ]:
 
 
-code = "METAR KEWR 111851Z VRB03G19KT 2SM R04R/3000VP6000FT TSRA BR FEW015 BKN040CB BKN065 OVC200 22/22 A2987 RMK AO2 PK WND 29028/1817 WSHFT 1812 TSB05RAB22 SLP114 FRQ LTGICCCCG TS OHD AND NW-N-E MOV NE P0013 T02270215"
-obs = Metar.Metar(code)
-
-# The present_weather() method summarizes the weather description (rain, etc.)
-print("weather: %s" % obs.present_weather())
-# The sky_conditions() method summarizes the cloud-cover observations.
-print("sky: %s" % obs.sky_conditions("\n     "))
-
-
-# In[ ]:
-
-
 df=pd.read_csv(r'../data/1052640.csv')
-
-
-# In[ ]:
-
-
-df1 = df.loc[0]['HOURLYSKYCONDITIONS']
-df1
-
-
-# In[ ]:
-
-
-#reformat the object to remove whitespace and colon
-df20 = re.sub(r'(\d)\s+(\d)', r'\1\2', df1)
-df20 = re.sub(r'\:', '', df20)
-df20
-
-
-# In[ ]:
-
-
-#run object in the metar function
-obs = Metar.Metar(df20)
-print obs.string()
 
 
 # In[ ]:
@@ -149,19 +113,93 @@ top
 # In[ ]:
 
 
-#top['HOURLYSKYCONDITIONS'] = re.sub(r'(\d)\s+(\d)', r'\1\2', top['HOURLYSKYCONDITIONS'])
-#top['HOURLYSKYCONDITIONS'] = re.sub('\:', '', top['HOURLYSKYCONDITIONS'])
-#top['HOURLYSKYCONDITIONS'] = top['HOURLYSKYCONDITIONS'].map(lambda x: x.sub(r'(\d)\s+(\d)', r'\1\2').sub('\:', ''))
+#df1 = df.loc[0]['HOURLYSKYCONDITIONS']
+#df1
 
-new = top['HOURLYSKYCONDITIONS'].str.replace(r'\:', '')
-top['HOURLYSKYCONDITIONS'] = new.str.replace(r'(\d)\s+(\d)', r'\1\2')
-top
+df21 = top.loc[4]['HOURLYPRSENTWEATHERTYPE']
+df21
 
 
 # In[ ]:
 
 
+#reformat the object to remove colon, digits{2}, whitespace
+#df20 = re.sub(r'\:\d{2}\s', '', df1)
+#df20
 
+#reformat the object to remove colon, digits{2}, vertical bar
+df21 = re.sub(r'\:\d{2}\s\|', ' ', df21)
+df21 = re.sub(r'\s+$', '', df21)
+df21
+
+
+# ### Looking into the integers following the weather and sky codes; 
+# #### Wether codes are not parsing when integers are included
+# #### Sky codes parse correctly until there is a code followed by more than 4 integers
+
+# In[ ]:
+
+
+df = pd.DataFrame({'weathertype':['-RA RA','MI|PR|BC|DR|BL|SH|TS|FZ','DZ|RA|SN|SG|IC|PL|GR|GS|UP|/'], 'J1': ['BR|FG|FU|VA|DU|SA|HZ|PY','PO|SQ|FC|SS|DS|NSW|/+','3'], 'J2':[1,4,5]})
+dfing = df.loc[0]['weathertype']
+#run object in the metar function
+obs = Metar.Metar(dfing)
+
+#print obs.string()
+obs.present_weather()
+
+
+# In[ ]:
+
+
+def getSkyConditions(x):
+    obs = Metar.Metar(x)
+    return obs.sky_conditions()
+
+
+# In[ ]:
+
+
+def getWeatherConditions(x):
+    obs = Metar.Metar(x)
+    return obs.present_weather()
+
+
+# #### Remove chars : _ and 2 integers following SKYCONDITIONS code; looking at LCD shows these 2 digits signify the SKYCONDITIONS code it follows
+
+# In[ ]:
+
+
+top['HOURLYSKYCONDITIONS'] = top['HOURLYSKYCONDITIONS'].str.replace(r'\:\d{2}\s', '')
+top
+
+
+# #### Translate code
+
+# In[ ]:
+
+
+top['HOURLYSKYCONDITIONS'] = top['HOURLYSKYCONDITIONS'].apply(getSkyConditions)
+top
+
+
+# ###### not working yet believe has something to do with NaN values - working on this
+
+# In[ ]:
+
+
+#parseColumn = top['HOURLYPRSENTWEATHERTYPE'].str.replace(r'\:\d{2}\s\|', ' ')
+#top['HOURLYPRSENTWEATHERTYPE'] = parseColumn.str.replace(r'\s+$', '')
+#top
+#top['HOURLYPRSENTWEATHERTYPE'] = top['HOURLYPRSENTWEATHERTYPE'].apply(getWeatherConditions)
+#top
+
+
+# In[ ]:
+
+
+df0 = top.loc[4]['HOURLYPRSENTWEATHERTYPE']
+df0
 
 
 # In[ ]:
@@ -169,15 +207,6 @@ top
 
 #df[(df['REPORTTPYE'] == 'FM-15')]
 #df.REPORTTPYE.unique()
-
-
-# In[ ]:
-
-
-#Make REPORTTYPE just integer, this may help later on during if we have to do normalization and analysis with reporttype
-#df.REPORTTPYE.replace(['FM-12', 'FM-15', 'FM-16', 'SOD', 'SY-MT'], [12, 15, 16, 1, 2], inplace=True)
-#df
 #Make REPORTTYPE just string , this makes it very easy to read and understand now
-#df.REPORTTPYE.replace(['FM-12', 'FM-15', 'FM-16', 'SOD', 'SY-MT'], ['SYNOP Report FLS', 'METAR Aviation routine', 'SPECI Aviation SWR', 'Summary of day report', 'Synoptic and METAR MR'], inplace=True)
-#df
+#df.REPORTTYPE.replace(['FM-12', 'FM-15', 'FM-16', 'SY-MT'], ['SYNOP Report FLS', 'METAR Aviation Routine', 'SPECI Aviation SWR', 'Synoptic and METAR MR'], inplace=True)
 

@@ -94,14 +94,12 @@ displayWeatherData(gsoDataHours)
 # In[87]:
 
 
-
 gsoData = getHourlyWeatherData()
 
 
 # Verifying the columns.
 
 # In[88]:
-
 
 
 gsoData.info()
@@ -112,17 +110,7 @@ gsoData.info()
 # In[89]:
 
 
-
 gsoData.rename(columns = {'REPORTTPYE':'REPORTTYPE'}, inplace=True)
-
-
-# Changing REPORTTYPE values
-# SYNOP Report FLS (Fixed Land Station), METAR Aviation Routine, SPECI Aviation SWR (Special Weather Report), Synoptic and METAR MR (Merged Report)
-
-# In[90]:
-
-
-gsoData.REPORTTYPE.replace(['FM-12', 'FM-15', 'FM-16', 'SY-MT'], ['SYNOP Report FLS', 'METAR Aviation Routine', 'SPECI Aviation SWR', 'Synoptic and METAR MR'], inplace=True)
 
 
 # These seem to be start of day values:
@@ -130,9 +118,7 @@ gsoData.REPORTTYPE.replace(['FM-12', 'FM-15', 'FM-16', 'SY-MT'], ['SYNOP Report 
 # In[91]:
 
 
-
-gsoData[gsoData.REPORTTYPE == 'SOD']
-    
+gsoData[gsoData.REPORTTYPE == 'SOD']  
 
 
 # Dropping **S**tart **O**f **D**ay
