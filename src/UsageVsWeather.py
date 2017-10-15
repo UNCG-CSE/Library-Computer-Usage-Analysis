@@ -129,6 +129,8 @@ matrixHourly[['Utilization(%)','HOURLYDRYBULBTEMPF']].corr()
 
 # In[ ]:
 
+from pandas.plotting import scatter_matrix
+
 # It seems that there is a pretty clear upper bound on usage that scales linearly with outside temperature.
 scatter_matrix(matrixHourly[['Utilization(%)','HOURLYDRYBULBTEMPF']], alpha=0.4, figsize=(16,16), diagonal='kde')
 
