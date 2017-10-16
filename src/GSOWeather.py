@@ -1,19 +1,12 @@
 
 # coding: utf-8
 
-# # GSOWeather
-# 
-# ## Objectives:
-# ### Plot any hourly weather condition over time
-# 
-#     
-# 
+# Weather Data
 
 # In[ ]:
 
 import numpy as np
 import pandas as pd
-import utils
 
 
 # In[ ]:
@@ -146,7 +139,7 @@ gsoDataHourly.info()
 # In[ ]:
 
 import matplotlib.pyplot as plt
-get_ipython().magic('matplotlib inline')
+get_ipython().magic(u'matplotlib inline')
 
 
 # In[ ]:
@@ -155,8 +148,15 @@ dateTime = gsoDataHourly.index.values
 tempWetBulbInF = gsoDataHourly.loc[:,'HOURLYWETBULBTEMPF'].values
 tempDryBulbInF = pd.to_numeric(gsoDataHourly.loc[:,'HOURLYDRYBULBTEMPF'].values,errors='coerce')
 
-plot_these = [ (tempWetBulbInF, 'Wet Bulb (F)')
-             , (tempDryBulbInF, 'Dry Bulb (F)') ]
 
-temp_chart = utils.pretty_plot(dateTime, *plot_these, figsize=(16,8), title='HourlyBulbTemp in degrees F')
+
+temp_chart = plt.figure(figsize=(16,8))
+temp1 = plt.plot(dateTime, tempWetBulbInF, label= 'Wet Bulb (F)')
+temp2 = plt.plot(dateTime, tempDryBulbInF, label= 'Dry Bulb (F)')
+
+plt.title('HourlyBulbTemp in degrees F')
+
+plt.ylabel('Temp')
+plt.xlabel('time')
+plt.legend(loc=0);
 
