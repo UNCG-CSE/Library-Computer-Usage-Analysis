@@ -86,10 +86,10 @@ plt.title(' HOURLY WindSpeed in mph')
 
 plt.ylabel('mph')
 plt.xlabel('time')
-#plt.legend(loc=0);
+plt.legend(loc=0);
 
 
-# # Ignore everything under this cell, leaving for reference only
+# # Below this cell is work from before 1st presentation
 
 # ### Defining variables. hourlyColumns may be altered later, but this is what we are using for now
 
