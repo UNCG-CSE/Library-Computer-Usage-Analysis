@@ -6,10 +6,10 @@
 # ## Objectives:
 # ### Test the Metar package
 # ### Decode the Metar codes
-# #### Have csv file completely decoded for REPORTTYPE, HOURLYSKYCONDITIONS, and HOURLYPRESENTWEATHERTTYPE
+# #### Have dataframe completely decoded for HOURLYSKYCONDITIONS and HOURLYPRESENTWEATHERTTYPE
 # 
 
-# In[ ]:
+# In[165]:
 
 
 import numpy as np
@@ -18,7 +18,7 @@ import re
 from metar import Metar
 
 
-# In[ ]:
+# In[166]:
 
 
 ####THIS IS A TEST SAMPLE LOOKING AT WHAT PYTHON_METAR CAN DO####
@@ -97,116 +97,139 @@ print("-----------------------------------------------------------------------\n
 
 
 
-# In[ ]:
+# In[167]:
 
 
 df=pd.read_csv(r'../data/1052640.csv')
 
 
-# In[ ]:
+# In[168]:
 
 
-top = df.head(5)
-top
+df.rename(columns = {'REPORTTPYE':'REPORTTYPE'}, inplace=True)
 
 
-# In[ ]:
+# In[169]:
 
 
-#df1 = df.loc[0]['HOURLYSKYCONDITIONS']
-#df1
-
-df21 = top.loc[4]['HOURLYPRSENTWEATHERTYPE']
-df21
+df = df[df.REPORTTYPE != 'SOD']
+df = df[df.REPORTTYPE != 'FM-12']
+df.REPORTTYPE.unique()
 
 
-# In[ ]:
+# In[170]:
 
 
-#reformat the object to remove colon, digits{2}, whitespace
-#df20 = re.sub(r'\:\d{2}\s', '', df1)
-#df20
-
-#reformat the object to remove colon, digits{2}, vertical bar
-df21 = re.sub(r'\:\d{2}\s\|', ' ', df21)
-df21 = re.sub(r'\s+$', '', df21)
-df21
-
-
-# ### Looking into the integers following the weather and sky codes; 
-# #### Wether codes are not parsing when integers are included
-# #### Sky codes parse correctly until there is a code followed by more than 4 integers
-
-# In[ ]:
+def skyConditionsFormat(x):
+    splitting_x = re.split('(\W+)', x)
+    for i in splitting_x:
+        if i == ' ':
+            pass
+        elif len(i) < 5:
+            hash2 = i[:3] + '0' + i[3:]
+            splitting_x = [j.replace(i, hash2) for j in splitting_x]
+        else:
+            pass 
+    return ''.join(splitting_x)
 
 
-df = pd.DataFrame({'weathertype':['-RA RA','MI|PR|BC|DR|BL|SH|TS|FZ','DZ|RA|SN|SG|IC|PL|GR|GS|UP|/'], 'J1': ['BR|FG|FU|VA|DU|SA|HZ|PY','PO|SQ|FC|SS|DS|NSW|/+','3'], 'J2':[1,4,5]})
-dfing = df.loc[0]['weathertype']
-#run object in the metar function
-obs = Metar.Metar(dfing)
-
-#print obs.string()
-obs.present_weather()
-
-
-# In[ ]:
+# In[171]:
 
 
 def getSkyConditions(x):
-    obs = Metar.Metar(x)
-    return obs.sky_conditions()
+    if x in ('CLR:00', 'CLR00:000000', 'CLR0:0000'):
+        return 'Clear sky'
+    elif x in ('X00 SCT70', '0'):
+        pass
+    elif "s" in x:
+        pass
+    else:
+        obs = Metar.Metar(x)
+        return obs.sky_conditions()
 
 
-# In[ ]:
+# In[172]:
 
 
-def getWeatherConditions(x):
-    obs = Metar.Metar(x)
-    return obs.present_weather()
+def getWeatherConditions(y):
+    if y in ('0'):
+        pass
+    elif "s" in y:
+        pass
+    else:
+        obs = Metar.Metar(y)
+        return obs.present_weather()
 
 
-# #### Remove chars : _ and 2 integers following SKYCONDITIONS code; looking at LCD shows these 2 digits signify the SKYCONDITIONS code it follows
+# ### SKYCONDITIONS translates the codes properly
+# ##### Had to remove the 2 integers before the Sky code EX) FEW:01 XXX; the "01" is the layer amount used in conjunction with the sky condition code given in eighths (oktas) so 01-02 correspond to the code FEW so I removed these integers since they correspond to the code it follows and so that the metar package would also work in translating 
+# ###### I had to also remove some data that had the "s" ("Suspect value" that Brown mentioned) within the data, these values continued to give errors so I had them skipped during translation
+# ###### Also at the moment I have the 'NaN' values replaced with '' but I can replace if needed
 
-# In[ ]:
+# #### Remove chars : _ and 2 integers following SKYCONDITIONS code; looking at LCD shows these 2 digits correspond to the SKYCONDITIONS code it follows
+
+# In[173]:
 
 
-top['HOURLYSKYCONDITIONS'] = top['HOURLYSKYCONDITIONS'].str.replace(r'\:\d{2}\s', '')
-top
+df['HOURLYSKYCONDITIONS'] = df['HOURLYSKYCONDITIONS'].str.replace(r'\:\d{2}\s', '')
+
+
+# In[174]:
+
+
+df['HOURLYSKYCONDITIONS'] = df['HOURLYSKYCONDITIONS'].replace(np.nan, '', regex=True)
+
+
+# ### 3 Skyconditions values with the "s"  
+
+# In[175]:
+
+
+df[df['HOURLYSKYCONDITIONS'].str.contains("s")]
 
 
 # #### Translate code
 
-# In[ ]:
+# In[176]:
 
 
-top['HOURLYSKYCONDITIONS'] = top['HOURLYSKYCONDITIONS'].apply(getSkyConditions)
-top
+df['HOURLYSKYCONDITIONS'] = df['HOURLYSKYCONDITIONS'].apply(skyConditionsFormat)
+df['HOURLYSKYCONDITIONS'] = df['HOURLYSKYCONDITIONS'].apply(getSkyConditions)
+df
 
 
-# ###### not working yet believe has something to do with NaN values - working on this
+# ### HOURLYPRESENTWEATHERTYPE translates the codes properly
+# ###### I had to also remove some data that had the "s" ("Suspect value" that Brown mentioned) within the data, these values continued to give errors so I had them skipped during translation
+# ###### Also at the moment I have the 'NaN' values replaced with '' but I can replace if needed
 
-# In[ ]:
-
-
-#parseColumn = top['HOURLYPRSENTWEATHERTYPE'].str.replace(r'\:\d{2}\s\|', ' ')
-#top['HOURLYPRSENTWEATHERTYPE'] = parseColumn.str.replace(r'\s+$', '')
-#top
-#top['HOURLYPRSENTWEATHERTYPE'] = top['HOURLYPRSENTWEATHERTYPE'].apply(getWeatherConditions)
-#top
+# In[177]:
 
 
-# In[ ]:
+df['HOURLYPRSENTWEATHERTYPE'] = df['HOURLYPRSENTWEATHERTYPE'].str.replace(r'\:\d*\s', ' ')
+df['HOURLYPRSENTWEATHERTYPE'] = df['HOURLYPRSENTWEATHERTYPE'].str.replace(r'\:\d*', ' ')
+df['HOURLYPRSENTWEATHERTYPE'] = df['HOURLYPRSENTWEATHERTYPE'].str.replace(r'\|', '')
+df['HOURLYPRSENTWEATHERTYPE'] = df['HOURLYPRSENTWEATHERTYPE'].str.rstrip()
 
 
-df0 = top.loc[4]['HOURLYPRSENTWEATHERTYPE']
-df0
+# In[178]:
 
 
-# In[ ]:
+df['HOURLYPRSENTWEATHERTYPE'] = df['HOURLYPRSENTWEATHERTYPE'].replace(np.nan, '', regex=True)
 
 
-#df[(df['REPORTTPYE'] == 'FM-15')]
-#df.REPORTTPYE.unique()
-#Make REPORTTYPE just string , this makes it very easy to read and understand now
-#df.REPORTTYPE.replace(['FM-12', 'FM-15', 'FM-16', 'SY-MT'], ['SYNOP Report FLS', 'METAR Aviation Routine', 'SPECI Aviation SWR', 'Synoptic and METAR MR'], inplace=True)
+# ### 29 HourlyWeatherType values with the "s"  
+
+# In[179]:
+
+
+df[df['HOURLYPRSENTWEATHERTYPE'].str.contains("s")]
+
+
+# ###### Translate codes
+
+# In[180]:
+
+
+df['HOURLYPRSENTWEATHERTYPE'] = df['HOURLYPRSENTWEATHERTYPE'].apply(getWeatherConditions)
+df
 
