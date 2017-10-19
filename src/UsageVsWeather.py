@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[ ]:
+# In[322]:
 
 import numpy as np
 import pandas as pd
@@ -10,7 +10,7 @@ import LibDataImport
 import weather
 
 
-# In[ ]:
+# In[323]:
 
 # Load utilization summary data into a DataFrame, one column per computer.
 machineStates = pd.read_csv(r'../data/SPR2017.csv')
@@ -18,18 +18,18 @@ machineStates['datestamp'] = machineStates['datestamp'].apply(pd.to_datetime)
 utilization = LibDataImport.machineStatesToPercentUtilization(machineStates)
 
 
-# In[ ]:
+# In[324]:
 
 utilization.info()
 
 
-# In[ ]:
+# In[325]:
 
 # Make this notebook useful for something.
 get_ipython().magic('matplotlib inline')
 
 
-# In[ ]:
+# In[326]:
 
 # Resample the utilization data to daily and monthly periods for cases where we don't care about intra-day trends.
 daily = utilization.resample('D').mean()
@@ -42,14 +42,14 @@ monthlyAggregate = monthly.apply('mean', axis=1)
 dailyAggregate.plot()
 
 
-# In[ ]:
+# In[327]:
 
 # Pull in weather data.
 gsoWeather = weather.parseWeatherData('../data/1052640.csv')
 gsoWeather.index
 
 
-# In[ ]:
+# In[328]:
 
 # Our library data only contains records from 2017-01-01 thru 2017-05-31.
 # Trim the weather data down to the same date range.
@@ -57,7 +57,7 @@ gsoWeather = gsoWeather[gsoWeather.index <= '2017-05-31']
 gsoWeather.index
 
 
-# In[ ]:
+# In[329]:
 
 # Now, we really only need some of these columns.
 gsoHourlyWeather = weather.hourlyWeatherOnly(gsoWeather)
@@ -75,7 +75,7 @@ gsoWeatherCore = gsoWeatherCore.replace(to_replace='[^0-9.-]', value='', regex=T
 gsoWeatherCore = gsoWeatherCore.replace(to_replace='', value='0').apply(np.float64)
 
 
-# In[ ]:
+# In[330]:
 
 # Now if we resample this to daily or monthly aggregate values, some columns
 # need to have their values averaged, and others need to be summed.
@@ -101,7 +101,7 @@ matrixDaily = pd.DataFrame(dailyAggregate, columns=['Utilization(%)']).join(dail
 matrixMonthly = pd.DataFrame(monthlyAggregate, columns=['Utilization(%)']).join(monthlyWeather, how='inner')
 
 
-# In[ ]:
+# In[331]:
 
 # It might be interesting to look at this data by each day of the week, too.
 daysOfWeek = [ 'Monday'
@@ -115,27 +115,27 @@ daysOfWeek = [ 'Monday'
 matrixDaily['Day of week'] = [daysOfWeek[d] for d in matrixDaily.index.dayofweek]
 
 
-# In[ ]:
+# In[332]:
 
 # Summary by day of week...
 matrixDaily.groupby(by='Day of week').mean()
 
 
-# In[ ]:
+# In[333]:
 
 # There is a weak positive correlation between the temperature and aggregate computer usage.
 matrixHourly[['Utilization(%)','HOURLYDRYBULBTEMPF']].corr()
 
 
-# In[ ]:
+# In[356]:
 
-from pandas.plotting import scatter_matrix
+# It seems that there is a pretty clear upper bound on usage that scales linearly-ish with outside temperature.
+x_y = matrixHourly[['Utilization(%)', 'HOURLYDRYBULBTEMPF']].rename(columns={'HOURLYDRYBULBTEMPF':'Temperature(°F)'})
+x_y['Utilization(%)'] = x_y['Utilization(%)'].apply(lambda x: x * 100.0)
+x_y.plot.scatter(x='Temperature(°F)', y='Utilization(%)', alpha=0.4, figsize=(16,16), title='Average computer utilization vs. temperature')
 
-# It seems that there is a pretty clear upper bound on usage that scales linearly with outside temperature.
-scatter_matrix(matrixHourly[['Utilization(%)','HOURLYDRYBULBTEMPF']], alpha=0.4, figsize=(16,16), diagonal='kde')
 
-
-# In[ ]:
+# In[335]:
 
 # However it seems that temperature has little impact on the amount of use any given computer receives.
 
