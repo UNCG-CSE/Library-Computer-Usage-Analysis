@@ -149,5 +149,7 @@ temps = merged['HOURLYDRYBULBTEMPF']
 fig = plt.figure(figsize=(16,16))
 temps = np.hstack([temps] * len(computerUsage.columns))
 usage = np.hstack([x.values for (_,x) in computerUsage.iteritems()])
-plt.hexbin(usage, temps, bins='log')
+hb = plt.hexbin(usage, temps, bins='log')
+cb = fig.colorbar(hb)
+cb.set_label('log(N)')
 
