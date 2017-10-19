@@ -1,0 +1,7 @@
+Team Member Name
+	Target goals
+		List of overall goals you are trying to achieve in the project, and the tasks assigned to you.
+	Achieved goals / activities
+		List the activities by date and how that relates to the goal.
+		Amount of time spent per each of the activities.
+		Link to specific files (notebooks) which show the activity.

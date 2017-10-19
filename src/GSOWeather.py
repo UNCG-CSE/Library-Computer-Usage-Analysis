@@ -15,6 +15,7 @@
 # In[73]:
 
 
+
 import numpy as np
 import pandas as pd
 
@@ -96,6 +97,7 @@ plt.legend(loc=0);
 # In[80]:
 
 
+
 hourlyColumns = ['DATE',
 'REPORTTPYE',
 'HOURLYSKYCONDITIONS',
@@ -119,11 +121,13 @@ hourlyColumns = ['DATE',
 # In[81]:
 
 
+
 #Defining functions - all together so we can see them and know what we have to work with
 # without scrolling through entire program
 
 
 # In[82]:
+
 
 
 def getAllWeatherData():
@@ -133,11 +137,13 @@ def getAllWeatherData():
 # In[83]:
 
 
+
 def getHourlyWeatherData():
     return pd.read_csv(r'../data/1052640.csv',usecols = hourlyColumns, low_memory = False)
 
 
 # In[84]:
+
 
 
 def displayWeatherData(array):
@@ -147,12 +153,14 @@ def displayWeatherData(array):
 # In[85]:
 
 
+
 #delaring variables from the functions - don't need to know exactly what is in them to use them
 gsoDataAll = getAllWeatherData()
 gsoDataHours = getHourlyWeatherData()
 
 
 # In[86]:
+
 
 
 #How to use the display method
@@ -193,13 +201,13 @@ gsoData.rename(columns = {'REPORTTPYE':'REPORTTYPE'}, inplace=True)
 
 
 
-gsoData[gsoData.REPORTTYPE == 'SOD']
-    
+gsoData[gsoData.REPORTTYPE == 'SOD']  
 
 
 # Dropping **S**tart **O**f **D**ay
 
 # In[91]:
+
 
 
 gsoDataHourly = gsoData[gsoData.REPORTTYPE != 'SOD']
@@ -208,10 +216,12 @@ gsoDataHourly = gsoData[gsoData.REPORTTYPE != 'SOD']
 # In[92]:
 
 
+
 gsoDataHourly.REPORTTYPE.unique()
 
 
 # In[93]:
+
 
 
 gsoDataHourly.set_index(gsoDataHourly['DATE'].apply(pd.to_datetime),inplace=True)
@@ -220,10 +230,12 @@ gsoDataHourly.set_index(gsoDataHourly['DATE'].apply(pd.to_datetime),inplace=True
 # In[94]:
 
 
+
 gsoDataHourly = gsoDataHourly.drop('DATE',axis=1)
 
 
 # In[95]:
+
 
 
 gsoDataHourly.info()
@@ -234,11 +246,13 @@ gsoDataHourly.info()
 # In[96]:
 
 
+
 import matplotlib.pyplot as plt
 get_ipython().magic(u'matplotlib inline')
 
 
 # In[97]:
+
 
 
 dateTime = gsoDataHourly.index.values
