@@ -162,12 +162,6 @@ from bokeh.plotting import figure, output_file, show, output_notebook
 # In[ ]:
 
 
-p = ""
-
-
-# In[ ]:
-
-
 weatherDates = np.array(weatherData['DATE'], dtype=np.datetime64)
 gateDates = np.array(gateCounts['Date'], dtype=np.datetime64)
 
@@ -196,15 +190,9 @@ precipFormatted = weatherData['HOURLYPrecip'].apply(precipConvert).apply(pd.to_n
 # In[ ]:
 
 
-precipFormatted.head() * 1000
-
-
-# In[ ]:
-
-
 p.line(weatherDates,weatherData['HOURLYWETBULBTEMPF'].values * 100,legend='Temp in F')
 p.circle(weatherDates,precipFormatted * 1000,color='blue',alpha=0.2, legend='Precipitation')
-p.line(gateDates, gateCounts['Patrons'].values, color='red', legend='Gate Count')
+p.circle(gateDates, gateCounts['Patrons'].values, color='red', legend='Gate Count')
 
 
 #p.title = "Library Gate Counts vs. Weather"
