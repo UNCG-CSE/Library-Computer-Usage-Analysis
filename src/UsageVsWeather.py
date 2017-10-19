@@ -148,8 +148,11 @@ temps = merged['HOURLYDRYBULBTEMPF']
 
 fig = plt.figure(figsize=(16,16))
 temps = np.hstack([temps] * len(computerUsage.columns))
-usage = np.hstack([x.values for (_,x) in computerUsage.iteritems()])
-hb = plt.hexbin(usage, temps, bins='log')
+usage = np.hstack([(x * 100.0).values for (_,x) in computerUsage.iteritems()])
+hb = plt.hexbin(temps, usage, bins='log', gridsize=75)
+hb.axes.set_title('Computer utilization vs. outside temperature, hourly')
+hb.axes.set_xlabel('Outside temperature (degrees Fahrenheit)')
+hb.axes.set_ylabel('Percent utilization')
 cb = fig.colorbar(hb)
 cb.set_label('log(N)')
 
