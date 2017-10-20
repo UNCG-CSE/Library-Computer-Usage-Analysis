@@ -30,3 +30,4 @@
         - 10/19/17: Prepared the files for merging with develop branch, resolve conflicts, and merge. This task relates to my goals because it allowed me to prepare my files in order to merge them to master. Hours worked: approx. 30 minutes
 https://github.com/UNCG-CSE/Library-Computer-Usage-Analysis/blob/ellis/src/GSOWeatherParseTest.ipynb
 https://github.com/UNCG-CSE/Library-Computer-Usage-Analysis/blob/ellis/src/GSOWeatherParseTest.py
+
