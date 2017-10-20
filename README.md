@@ -29,5 +29,5 @@ Michael
 
 Nick    -
 
-Patti   -
+Patti   - Document progress in .docx file for presentation
     
