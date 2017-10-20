@@ -1,4 +1,4 @@
-Nickolas Lloyd
++ Nickolas Lloyd
     * Target goals:
         - Investigate possible relations between weather and computer usage patterns.
     * Achieved goals / activities:
