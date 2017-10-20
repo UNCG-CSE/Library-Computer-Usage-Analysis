@@ -29,4 +29,9 @@
         - 10/18/17: A ’s’ character was brought to my attention from the LCD document, where some data may be suspect due to being manually entered in, this data was skipped during translation until we further decide on what to do with the weather data after some findings Nick discovered. This task relates to my goals because it allowed me to discover another character that makes some of the data suspect. This data was removed during translation, and as a result all sky and weather codes are now translated for use once we determine whether or not we will incorporate weather data. Hours worked: approx. 2.5 hours
         - 10/19/17: Prepared the files for merging with develop branch, resolve conflicts, and merge. This task relates to my goals because it allowed me to prepare my files in order to merge them to master. Hours worked: approx. 30 minutes
 https://github.com/UNCG-CSE/Library-Computer-Usage-Analysis/blob/ellis/src/GSOWeatherParseTest.ipynb
+<<<<<<< HEAD
 https://github.com/UNCG-CSE/Library-Computer-Usage-Analysis/blob/ellis/src/GSOWeatherParseTest.py
+=======
+https://github.com/UNCG-CSE/Library-Computer-Usage-Analysis/blob/ellis/src/GSOWeatherParseTest.py
+
+>>>>>>> 59db37edddec97605ae93ce70d4acfd63396501f
