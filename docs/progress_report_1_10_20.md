@@ -31,3 +31,12 @@
 https://github.com/UNCG-CSE/Library-Computer-Usage-Analysis/blob/ellis/src/GSOWeatherParseTest.ipynb
 https://github.com/UNCG-CSE/Library-Computer-Usage-Analysis/blob/ellis/src/GSOWeatherParseTest.py
 
++ Patricia Tanzer
+   * Target Goals
+      - Visualize some of the weather data into graphs
+      - Begin documentation for the next presentation in a .docx file
+   * Achieved Goals
+      - made two new graphs in src/GSOWeather.ipynb. 
+      - created .docx document anaylzing one of our original theories
+   * Next Goals
+      - update presentation document with analysis of work currently in master
