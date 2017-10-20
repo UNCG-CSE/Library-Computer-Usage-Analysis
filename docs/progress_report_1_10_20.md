@@ -40,3 +40,17 @@ https://github.com/UNCG-CSE/Library-Computer-Usage-Analysis/blob/ellis/src/GSOWe
       - created .docx document anaylzing one of our original theories
    * Next Goals
       - update presentation document with analysis of work currently in master
++ Brown Biggers
+	* Target Goals
+		- Acquire datasets from multiple sources (Library, NOAA)
+      - Create initial presentation file.
+      - Determine Pandas versus NumPy processing methods/functions for tabular data processing
+      - Research NOAA code designations for data import
+      - Assess visualization/processing methods for weather and library gate count 
+	* Achieved Goals
+		- Datasets have been acquired in stages. Initially the goal was to provide enough data for testing. This is complete. Once the methods had been determined, larger datasets were acquired and uploaded. These datasets may require further processing and concatenation due to their size. Some of this data did not exist (e.g. computer attributes) and needed to be collected manually. Other datasets required processing (e.g. Library Gate Counts) as it was not in a consistent format.
+		- After working with an number of Pandas default functions, it appears that there will be a number of these that will suit our needs. There are still more that may show potential, and will require further research.
+		- NOAA encoding shows some inconsistent tagging with regard to letter codes. We feel we have done what is necessary to assess the codes found in the imported datasets.
+	* Next Goals
+		- Work with the Bokeh library for dynamic visualization
+		- Further research into statistical analysis to further refine the datasets, and determine what can be culled from inclusion.
