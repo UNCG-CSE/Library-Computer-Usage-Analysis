@@ -12,16 +12,14 @@
 # ## Task 1:
 # ### Plot Hourly precipitation over time
 
-# In[73]:
-
-
+# In[1]:
 
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
-# In[74]:
-
+# In[2]:
 
 # Make a dataframe of the columns we need 
 GraphingColumns = ['DATE',
@@ -31,22 +29,19 @@ GraphingColumns = ['DATE',
 GraphingDF = pd.read_csv(r'../data/1052640.csv',usecols = GraphingColumns, low_memory = False)
 
 
-# In[75]:
-
+# In[3]:
 
 # Rename the Report'tpye' column to prevent headaches 
 GraphingDF.rename(columns = {'REPORTTPYE':'REPORTTYPE'}, inplace=True)
 
 
-# In[76]:
-
+# In[4]:
 
 # Drop StartOfDay values (always NaN)
 GraphingDF = GraphingDF[GraphingDF.REPORTTYPE != 'SOD']
 
 
-# In[77]:
-
+# In[5]:
 
 # Index based on DATE, then drop DATE
 GraphingDF.set_index(GraphingDF['DATE'].apply(pd.to_datetime),inplace=True)
@@ -54,8 +49,7 @@ GraphingDF = GraphingDF.drop('DATE',axis=1)
 
 import matplotlib.pyplot as plt
 %matplotlib inline
-# In[78]:
-
+# In[6]:
 
 
 # Graph the hourly precipitation (Finally!)
@@ -73,8 +67,7 @@ plt.xlabel('time')
 plt.legend(loc=0);
 
 
-# In[79]:
-
+# In[7]:
 
 # Graph Wind Speed
 #dateTime = GraphingDF.index.values
@@ -94,9 +87,7 @@ plt.legend(loc=0);
 
 # ### Defining variables. hourlyColumns may be altered later, but this is what we are using for now
 
-# In[80]:
-
-
+# In[8]:
 
 hourlyColumns = ['DATE',
 'REPORTTPYE',
@@ -118,50 +109,38 @@ hourlyColumns = ['DATE',
 'HOURLYAltimeterSetting']
 
 
-# In[81]:
-
-
+# In[9]:
 
 #Defining functions - all together so we can see them and know what we have to work with
 # without scrolling through entire program
 
 
-# In[82]:
-
-
+# In[10]:
 
 def getAllWeatherData():
     return pd.read_csv(r'../data/1052640.csv',low_memory=False)
 
 
-# In[83]:
-
-
+# In[11]:
 
 def getHourlyWeatherData():
     return pd.read_csv(r'../data/1052640.csv',usecols = hourlyColumns, low_memory = False)
 
 
-# In[84]:
-
-
+# In[12]:
 
 def displayWeatherData(array):
     print array.columns.values
 
 
-# In[85]:
-
-
+# In[13]:
 
 #delaring variables from the functions - don't need to know exactly what is in them to use them
 gsoDataAll = getAllWeatherData()
 gsoDataHours = getHourlyWeatherData()
 
 
-# In[86]:
-
-
+# In[14]:
 
 #How to use the display method
 displayWeatherData(gsoDataAll)
@@ -170,90 +149,68 @@ displayWeatherData(gsoDataHours)
 
 # This is just a smaller subset of the columns. Daily and Monthly rollups were ignored. Fahrenheit temps used instead of Celcius.
 
-# In[87]:
-
-
+# In[15]:
 
 gsoData = getHourlyWeatherData()
 
 
 # Verifying the columns.
 
-# In[88]:
-
-
+# In[16]:
 
 gsoData.info()
 
 
 # The spelling here is frustrating.
 
-# In[89]:
-
-
+# In[17]:
 
 gsoData.rename(columns = {'REPORTTPYE':'REPORTTYPE'}, inplace=True)
 
 
 # These seem to be start of day values:
 
-# In[90]:
+# In[18]:
 
-
-
-gsoData[gsoData.REPORTTYPE == 'SOD']  
+gsoData[gsoData.REPORTTYPE == 'SOD']
 
 
 # Dropping **S**tart **O**f **D**ay
 
-# In[91]:
-
-
+# In[19]:
 
 gsoDataHourly = gsoData[gsoData.REPORTTYPE != 'SOD']
 
 
-# In[92]:
-
-
+# In[20]:
 
 gsoDataHourly.REPORTTYPE.unique()
 
 
-# In[93]:
-
-
+# In[21]:
 
 gsoDataHourly.set_index(gsoDataHourly['DATE'].apply(pd.to_datetime),inplace=True)
 
 
-# In[94]:
-
-
+# In[22]:
 
 gsoDataHourly = gsoDataHourly.drop('DATE',axis=1)
 
 
-# In[95]:
-
-
+# In[23]:
 
 gsoDataHourly.info()
 
 
 # ehhh... just for the heck of it...
 
-# In[96]:
-
-
+# In[24]:
 
 import matplotlib.pyplot as plt
-get_ipython().magic(u'matplotlib inline')
+get_ipython().magic('matplotlib inline')
 
 
-# In[97]:
-
-
+# In[25]:
 
 dateTime = gsoDataHourly.index.values
 tempWetBulbInF = gsoDataHourly.loc[:,'HOURLYWETBULBTEMPF'].values
