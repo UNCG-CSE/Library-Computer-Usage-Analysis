@@ -8,14 +8,20 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import LibDataImport
 import weather
+import cPickle
+import os.path
 
 
 # In[2]:
 
 # Load utilization summary data into a DataFrame, one column per computer.
-machineStates = pd.read_csv(r'../data/SPR2017.csv')
-machineStates['datestamp'] = machineStates['datestamp'].apply(pd.to_datetime)
-utilization = LibDataImport.machineStatesToPercentUtilization(machineStates)
+pkl = open(os.path.join('..', 'data', 'LibData.pkl'), 'rb')
+utilization = cPickle.load(pkl)
+pkl.close()
+
+# Remove RRK001 because it seems to always be on, which is unlikely to be due to student use.
+# Convert utilization units to %.
+utilization = utilization.drop(['RRK001'], axis=1).apply(lambda x: x * 100.0)
 
 
 # In[3]:
@@ -24,6 +30,26 @@ utilization.info()
 
 
 # In[4]:
+
+# Pull in weather data.
+pkl = open(os.path.join('..', 'data', 'WeatherData.pkl'), 'rb')
+gsoWeather = cPickle.load(pkl)
+pkl.close()
+gsoWeather.index
+
+
+# In[5]:
+
+# Our library data contains records from 2010-03-24 to 2017-10-19.
+# The weather data contains records from 2010-07-01 to 2017-08-21.
+# Trim the datasets down to the intersection of these date ranges.
+gsoWeather = gsoWeather[(gsoWeather.index >= '2010-07-01') & (gsoWeather.index < '2017-08-22')]
+print(gsoWeather.index)
+utilization = utilization[(utilization.index >= '2010-07-01') & (utilization.index < '2017-08-22')]
+print(utilization.index)
+
+
+# In[6]:
 
 # Make this notebook useful for something.
 get_ipython().magic('matplotlib inline')
@@ -44,21 +70,6 @@ dailyAggregate.plot()
 
 # In[8]:
 
-# Pull in weather data.
-gsoWeather = weather.parseWeatherData('../data/1052640.csv')
-gsoWeather.index
-
-
-# In[9]:
-
-# Our library data only contains records from 2017-01-01 thru 2017-05-31.
-# Trim the weather data down to the same date range.
-gsoWeather = gsoWeather[gsoWeather.index <= '2017-05-31']
-gsoWeather.index
-
-
-# In[10]:
-
 # Now, we really only need some of these columns.
 gsoHourlyWeather = weather.hourlyWeatherOnly(gsoWeather)
 
@@ -73,9 +84,11 @@ gsoWeatherCore = gsoHourlyWeather[columnsOfInterest]
 # Clean up incorrect values.
 gsoWeatherCore = gsoWeatherCore.replace(to_replace='[^0-9.-]', value='', regex=True)
 gsoWeatherCore = gsoWeatherCore.replace(to_replace='', value='0').apply(np.float64)
+gsoWeatherInterp = gsoWeatherCore.resample('H').interpolate()
+gsoWeatherCore.head()
 
 
-# In[11]:
+# In[9]:
 
 # Now if we resample this to daily or monthly aggregate values, some columns
 # need to have their values averaged, and others need to be summed.
@@ -96,12 +109,12 @@ monthlyWeather = aggregateMatrix(gsoWeatherCore, 'M')
 
 # And finally join with library data.  This gives us individual computer usage, as well as a subset of
 # the weather data, in hourly, daily, and monthly periods.
-matrixHourly = pd.DataFrame(hourlyAggregate, columns=['Utilization(%)']).join(gsoWeatherCore, how='inner')
+matrixHourly = pd.DataFrame(hourlyAggregate, columns=['Utilization(%)']).join(gsoWeatherInterp, how='inner')
 matrixDaily = pd.DataFrame(dailyAggregate, columns=['Utilization(%)']).join(dailyWeather, how='inner')
 matrixMonthly = pd.DataFrame(monthlyAggregate, columns=['Utilization(%)']).join(monthlyWeather, how='inner')
 
 
-# In[12]:
+# In[10]:
 
 # It might be interesting to look at this data by each day of the week, too.
 daysOfWeek = [ 'Monday'
@@ -115,44 +128,46 @@ daysOfWeek = [ 'Monday'
 matrixDaily['Day of week'] = [daysOfWeek[d] for d in matrixDaily.index.dayofweek]
 
 
-# In[13]:
+# In[11]:
 
 # Summary by day of week...
 matrixDaily.groupby(by='Day of week').mean()
 
 
-# In[14]:
+# In[12]:
 
-# There is a weak positive correlation between the temperature and aggregate computer usage.
+# When considering the entire dataset, there is no correlation between utilization and outside temperature.
 matrixHourly[['Utilization(%)','HOURLYDRYBULBTEMPF']].corr()
 
 
-# In[15]:
+# In[14]:
 
-# It seems that there is a pretty clear upper bound on usage that scales linearly-ish with outside temperature.
-x_y = matrixHourly[['Utilization(%)', 'HOURLYDRYBULBTEMPF']].rename(columns={'HOURLYDRYBULBTEMPF':'Temperature(°F)'})
-x_y['Utilization(%)'] = x_y['Utilization(%)'].apply(lambda x: x * 100.0)
-x_y.plot.scatter(x='Temperature(°F)', y='Utilization(%)', alpha=0.4, figsize=(16,16), title='Average computer utilization vs. temperature')
+def hexPlot(x, y, title, xlabel, ylabel):
+    fig = plt.figure(figsize=(16,16))
+    hb = plt.hexbin(x, y, bins='log', gridsize=75)
+    hb.axes.set_title(title)
+    hb.axes.set_xlabel(xlabel)
+    hb.axes.set_ylabel(ylabel)
+    cb = fig.colorbar(hb)
+    cb.set_label('log(N)')
 
 
 # In[16]:
 
-# However it seems that temperature has little impact on the amount of use any given computer receives.
+x = matrixHourly['HOURLYDRYBULBTEMPF']
+y = matrixHourly['Utilization(%)']
+hexPlot(x, y, 'Aggregate computer use vs. temperature, hourly', 'Temperature(F)', 'Use(%)')
 
-merged = gsoWeatherCore[['HOURLYDRYBULBTEMPF']].join(utilization, how='inner')
+
+# In[18]:
+
+merged = gsoWeatherInterp[['HOURLYDRYBULBTEMPF']].join(utilization, how='inner')
 merged.info()
 
-# Remove RRK001 because it seems to always be on, which is unlikely to be due to student use.
-computerUsage = merged.drop(['HOURLYDRYBULBTEMPF', 'RRK001'], axis=1)
+computerUsage = merged.drop(['HOURLYDRYBULBTEMPF'], axis=1)
 temps = merged['HOURLYDRYBULBTEMPF']
 
-fig = plt.figure(figsize=(16,16))
 temps = np.hstack([temps] * len(computerUsage.columns))
-usage = np.hstack([(x * 100.0).values for (_,x) in computerUsage.iteritems()])
-hb = plt.hexbin(temps, usage, bins='log', gridsize=75)
-hb.axes.set_title('Computer utilization vs. outside temperature, hourly')
-hb.axes.set_xlabel('Outside temperature (degrees Fahrenheit)')
-hb.axes.set_ylabel('Percent utilization')
-cb = fig.colorbar(hb)
-cb.set_label('log(N)')
+usage = np.hstack([x.values for (_,x) in computerUsage.iteritems()])
+hexPlot(temps, usage, 'Individual computer use vs. temperature, hourly', 'Temperature(F)', 'Use(%)')
 
