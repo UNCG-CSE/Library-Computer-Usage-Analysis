@@ -93,12 +93,18 @@ hover = HoverTool(
     ],
     formatters={"Hour":"datetime"}
 )
-
-source = ColumnDataSource.from_df(meansUnstacked)
-
 #TOOLS=[hover,"crosshair,pan,wheel_zoom,zoom_in,zoom_out,box_zoom,undo,redo,reset,tap,save,box_select,poly_select,lasso_select"]
 TOOLS=[hover,"crosshair,pan,wheel_zoom,zoom_in,zoom_out,box_zoom,reset,tap,save,box_select,poly_select,lasso_select"]
 
+
+# This ColumnDataSource is necessary to pass the dataframe values to the scatter plot later.
+
+# In[ ]:
+
+source = ColumnDataSource.from_df(meansUnstacked)
+
+
+# These are the basic commands to create the graph known as `mainGraph`. The `select()` commands are perceived to improve performance on large datasets
 
 # In[ ]:
 
@@ -112,13 +118,29 @@ mainGraph.background_fill_color = "#fafafa"
 mainGraph.select(BoxSelectTool).select_every_mousemove = False
 mainGraph.select(LassoSelectTool).select_every_mousemove = False
 
-def hourTicks():
-    [str(i)+":00" for i in range(0,24)]
+
+# Formatting the tickers requires some finesse. This first example uses some JavaScript to format the tick values to a 24-hour clock, and then constrain it to integers.
+
+# In[ ]:
 
 mainGraph.yaxis.formatter = FuncTickFormatter(code="""return Math.floor(tick)+':00'""")
 mainGraph.yaxis.ticker = FixedTicker(ticks = range(0,24))
 
+
+# Formatting the xaxis requires aligning the computernames to the values within the unstacked dataframe. This is omitted for now. 
+
+# In[ ]:
+
+keys=range(0,7488,24)
+values=list(meansUnstacked.comps.unique())
+graphCompIndex = dict(zip(keys,values))
+mainGraph.xaxis.ticker = FixedTicker(ticks = range(0,7488,24))
+mainGraph.xaxis.major_label_overrides = graphCompIndex
+
+
+# In[ ]:
+
 mainGraph.scatter("index","hour",radius="means",color="blue",alpha=.5,source=source)
-output_file("./AvgPercentUtil.html", title='Library Usage: Average Percent Utilization per Hour')
+#output_file("./AvgPercentUtil.html", title='Library Usage: Average Percent Utilization per Hour')
 show(mainGraph)
 
