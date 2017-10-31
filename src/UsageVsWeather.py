@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[41]:
 
 import numpy as np
 import pandas as pd
@@ -12,7 +12,7 @@ import cPickle
 import os.path
 
 
-# In[2]:
+# In[42]:
 
 # Load utilization summary data into a DataFrame, one column per computer.
 pkl = open(os.path.join('..', 'data', 'LibData.pkl'), 'rb')
@@ -24,12 +24,12 @@ pkl.close()
 utilization = utilization.drop(['RRK001'], axis=1).apply(lambda x: x * 100.0)
 
 
-# In[3]:
+# In[43]:
 
 utilization.info()
 
 
-# In[4]:
+# In[44]:
 
 # Pull in weather data.
 pkl = open(os.path.join('..', 'data', 'WeatherData.pkl'), 'rb')
@@ -38,7 +38,7 @@ pkl.close()
 gsoWeather.index
 
 
-# In[5]:
+# In[45]:
 
 # Our library data contains records from 2010-03-24 to 2017-10-19.
 # The weather data contains records from 2010-07-01 to 2017-08-21.
@@ -49,13 +49,13 @@ utilization = utilization[(utilization.index >= '2010-07-01') & (utilization.ind
 print(utilization.index)
 
 
-# In[6]:
+# In[46]:
 
 # Make this notebook useful for something.
 get_ipython().magic('matplotlib inline')
 
 
-# In[7]:
+# In[47]:
 
 # Resample the utilization data to daily and monthly periods for cases where we don't care about intra-day trends.
 daily = utilization.resample('D').mean()
@@ -68,7 +68,7 @@ monthlyAggregate = monthly.apply(lambda x: x.mean(), axis=1)
 dailyAggregate.plot()
 
 
-# In[8]:
+# In[48]:
 
 # Now, we really only need some of these columns.
 gsoHourlyWeather = weather.hourlyWeatherOnly(gsoWeather)
@@ -88,7 +88,7 @@ gsoWeatherInterp = gsoWeatherCore.resample('H').interpolate()
 gsoWeatherCore.head()
 
 
-# In[9]:
+# In[49]:
 
 # Now if we resample this to daily or monthly aggregate values, some columns
 # need to have their values averaged, and others need to be summed.
@@ -114,7 +114,7 @@ matrixDaily = pd.DataFrame(dailyAggregate, columns=['Utilization(%)']).join(dail
 matrixMonthly = pd.DataFrame(monthlyAggregate, columns=['Utilization(%)']).join(monthlyWeather, how='inner')
 
 
-# In[10]:
+# In[50]:
 
 # It might be interesting to look at this data by each day of the week, too.
 daysOfWeek = [ 'Monday'
@@ -128,19 +128,19 @@ daysOfWeek = [ 'Monday'
 matrixDaily['Day of week'] = [daysOfWeek[d] for d in matrixDaily.index.dayofweek]
 
 
-# In[11]:
+# In[51]:
 
 # Summary by day of week...
 matrixDaily.groupby(by='Day of week').mean()
 
 
-# In[12]:
+# In[52]:
 
 # When considering the entire dataset, there is no correlation between utilization and outside temperature.
 matrixHourly[['Utilization(%)','HOURLYDRYBULBTEMPF']].corr()
 
 
-# In[14]:
+# In[53]:
 
 def hexPlot(x, y, title, xlabel, ylabel):
     fig = plt.figure(figsize=(16,16))
@@ -152,14 +152,14 @@ def hexPlot(x, y, title, xlabel, ylabel):
     cb.set_label('log(N)')
 
 
-# In[16]:
+# In[54]:
 
 x = matrixHourly['HOURLYDRYBULBTEMPF']
 y = matrixHourly['Utilization(%)']
-hexPlot(x, y, 'Aggregate computer use vs. temperature, hourly', 'Temperature(F)', 'Use(%)')
+#hexPlot(x, y, 'Aggregate computer use vs. temperature, hourly', 'Temperature(F)', 'Use(%)')
 
 
-# In[18]:
+# In[55]:
 
 merged = gsoWeatherInterp[['HOURLYDRYBULBTEMPF']].join(utilization, how='inner')
 merged.info()
@@ -169,5 +169,38 @@ temps = merged['HOURLYDRYBULBTEMPF']
 
 temps = np.hstack([temps] * len(computerUsage.columns))
 usage = np.hstack([x.values for (_,x) in computerUsage.iteritems()])
-hexPlot(temps, usage, 'Individual computer use vs. temperature, hourly', 'Temperature(F)', 'Use(%)')
+#hexPlot(temps, usage, 'Individual computer use vs. temperature, hourly', 'Temperature(F)', 'Use(%)')
+
+
+# In[56]:
+
+import seaborn as sns
+
+matrixHourly.corr()
+
+
+# In[57]:
+
+sns.heatmap(matrixHourly.corr())
+
+
+# In[58]:
+
+utilization = utilization[1:]
+gsoWeatherInterp = gsoWeatherInterp[1:]
+print(utilization.head())
+print(gsoWeatherInterp.head())
+
+
+# In[71]:
+
+stacked = utilization.join(gsoWeatherInterp, how='inner')
+stacked = (stacked - stacked.mean()) / stacked.std()
+cc = stacked.corr()
+
+
+# In[74]:
+
+fig, ax = plt.subplots(figsize=(75,75))
+sns.heatmap(cc, ax=ax)
 
