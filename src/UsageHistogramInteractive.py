@@ -32,21 +32,55 @@ with gzip.open(r'../data/LibData.pkl.gz') as f:
 libraryData.info()
 
 
-# The Bokeh libraries necessary for this graph:
+# This is a grouping of the library data by average per hour using arbitrary endpoints.
 
 # In[ ]:
 
-from bokeh.layouts import row, column
-from bokeh.models import BoxSelectTool, LassoSelectTool, Spacer, FuncTickFormatter, FixedTicker, HoverTool, ColumnDataSource
-from bokeh.plotting import figure, output_file, output_notebook, show, save
-output_notebook()
+startDate = pd.to_datetime("2016-01-01")
+endDate = pd.to_datetime("2017-12-31")
+dateMask = (libraryData.index > startDate) & (libraryData.index < endDate)
 
 
-# This is a grouping of the library data by average per hour over the entire dataset. 
+# The computer attributes need to be loaded into a separate dataframe:
 
 # In[ ]:
 
-libraryMeans = libraryData.groupby(libraryData.index.hour).mean()*100
+compAttrs = pd.read_csv(r'../data/computerAttributes.csv',header=0)
+
+
+# In[ ]:
+
+compAttrs.info()
+
+
+# In[ ]:
+
+booleanCols = ["requiresLogon",
+               "isDesktop",
+               "inJackson",
+               "is245",
+               "largeMonitor",
+               "adjacentWindow",
+               "collaborativeSpace",
+               "roomIsolated",
+               "inQuietArea"]
+
+
+# Using the attributes from above as booleans, create a mask for the `compAttrs` dataframe, and return the names.
+
+# In[ ]:
+
+attrsNames = compAttrs[compAttrs.requiresLogon == True].computerName
+
+
+# In[ ]:
+
+libraryMeans = libraryData[dateMask].groupby(libraryData[dateMask].index.hour).mean()*100
+
+
+# In[ ]:
+
+libraryMeans.info()
 
 
 # Since the format is a 24 (hours) x 312 (computers) matrix, and the scatter plot is looking for single-dimension arrays, the data needs to be unstacked into these arrays.
@@ -59,29 +93,29 @@ meansUnstacked.columns = ["comps","hour","means"]
 
 # In[ ]:
 
-meansUnstacked.head()
+meansUnstackedMerged = meansUnstacked.merge(compAttrs, left_on='comps',right_on='computerName')
 
 
-# In[ ]:
-
-comps = libraryMeans.unstack().reset_index().iloc[:,0].values
-hours = libraryMeans.unstack().reset_index().iloc[:,1].values
-means = libraryMeans.unstack().reset_index().iloc[:,2].values
-print comps.size
-print 24 * 312
-
+# Since the number of machines in the later graph might change, going ahead here and setting variables based on the count of machines returned in the dataframe above:
 
 # In[ ]:
 
-print libraryMeans.index
+machineCount = meansUnstackedMerged.comps.unique().size
+recordCount = meansUnstackedMerged.index.size
+hourCount = 24
 
+
+# The Bokeh libraries necessary for this graph:
 
 # In[ ]:
 
-print libraryMeans.columns
+from bokeh.layouts import row, column
+from bokeh.models import BoxSelectTool, LassoSelectTool, Spacer, FuncTickFormatter, FixedTicker, HoverTool, ColumnDataSource
+from bokeh.plotting import figure, output_file, output_notebook, show, save
+output_notebook()
 
 
-# Bokeh allows a number of tools included in the tool bar adjacent to the graph. Testing the tools available and configurations for each.
+# Bokeh allows a number of tools included in the tool bar adjacent to the graph. Testing the tools available and configurations for each. Hover, in this case, uses the data from the ColumnDataSource to populate the tooltips.
 
 # In[ ]:
 
@@ -94,14 +128,14 @@ hover = HoverTool(
     formatters={"Hour":"datetime"}
 )
 #TOOLS=[hover,"crosshair,pan,wheel_zoom,zoom_in,zoom_out,box_zoom,undo,redo,reset,tap,save,box_select,poly_select,lasso_select"]
-TOOLS=[hover,"crosshair,pan,wheel_zoom,zoom_in,zoom_out,box_zoom,reset,tap,save,box_select,poly_select,lasso_select"]
+TOOLS=[hover,"crosshair,pan,wheel_zoom,box_zoom,reset,tap,save,box_select,poly_select,lasso_select"]
 
 
 # This ColumnDataSource is necessary to pass the dataframe values to the scatter plot later.
 
 # In[ ]:
 
-source = ColumnDataSource.from_df(meansUnstacked)
+source = ColumnDataSource.from_df(meansUnstackedMerged)
 
 
 # These are the basic commands to create the graph known as `mainGraph`. The `select()` commands are perceived to improve performance on large datasets
@@ -111,8 +145,8 @@ source = ColumnDataSource.from_df(meansUnstacked)
 mainGraph = figure(tools=TOOLS, plot_width=900, plot_height=600,
                      min_border=10, min_border_left=50,
                      toolbar_location="above",
-                     x_axis_location=None,
-                     #y_axis_location=None,
+                     x_axis_location=None, # this is left in, as the x-axis ticks are hard to read zoomed out.
+                     #y_axis_location=None, 
                      title="Library Usage: Average Percent Utilization per Hour")
 mainGraph.background_fill_color = "#fafafa"
 mainGraph.select(BoxSelectTool).select_every_mousemove = False
@@ -131,16 +165,16 @@ mainGraph.yaxis.ticker = FixedTicker(ticks = range(0,24))
 
 # In[ ]:
 
-keys=range(0,7488,24)
-values=list(meansUnstacked.comps.unique())
+keys=range(0,recordCount,hourCount)
+values=list(meansUnstackedMerged.comps.unique())
 graphCompIndex = dict(zip(keys,values))
-mainGraph.xaxis.ticker = FixedTicker(ticks = range(0,7488,24))
+mainGraph.xaxis.ticker = FixedTicker(ticks = range(0,recordCount,hourCount))
 mainGraph.xaxis.major_label_overrides = graphCompIndex
 
 
 # In[ ]:
 
-mainGraph.scatter("index","hour",radius="means",color="blue",alpha=.5,source=source)
+mainGraph.scatter("index","hour",radius="means",color="blue",alpha=.4,source=source)
 #output_file("./AvgPercentUtil.html", title='Library Usage: Average Percent Utilization per Hour')
 show(mainGraph)
 
