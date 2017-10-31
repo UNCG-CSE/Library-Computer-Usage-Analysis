@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[41]:
+# In[1]:
 
 import numpy as np
 import pandas as pd
@@ -12,7 +12,7 @@ import cPickle
 import os.path
 
 
-# In[42]:
+# In[2]:
 
 # Load utilization summary data into a DataFrame, one column per computer.
 pkl = open(os.path.join('..', 'data', 'LibData.pkl'), 'rb')
@@ -24,12 +24,12 @@ pkl.close()
 utilization = utilization.drop(['RRK001'], axis=1).apply(lambda x: x * 100.0)
 
 
-# In[43]:
+# In[3]:
 
 utilization.info()
 
 
-# In[44]:
+# In[4]:
 
 # Pull in weather data.
 pkl = open(os.path.join('..', 'data', 'WeatherData.pkl'), 'rb')
@@ -38,7 +38,7 @@ pkl.close()
 gsoWeather.index
 
 
-# In[45]:
+# In[5]:
 
 # Our library data contains records from 2010-03-24 to 2017-10-19.
 # The weather data contains records from 2010-07-01 to 2017-08-21.
@@ -49,13 +49,13 @@ utilization = utilization[(utilization.index >= '2010-07-01') & (utilization.ind
 print(utilization.index)
 
 
-# In[46]:
+# In[6]:
 
 # Make this notebook useful for something.
 get_ipython().magic('matplotlib inline')
 
 
-# In[47]:
+# In[7]:
 
 # Resample the utilization data to daily and monthly periods for cases where we don't care about intra-day trends.
 daily = utilization.resample('D').mean()
@@ -68,7 +68,7 @@ monthlyAggregate = monthly.apply(lambda x: x.mean(), axis=1)
 dailyAggregate.plot()
 
 
-# In[48]:
+# In[8]:
 
 # Now, we really only need some of these columns.
 gsoHourlyWeather = weather.hourlyWeatherOnly(gsoWeather)
@@ -88,7 +88,7 @@ gsoWeatherInterp = gsoWeatherCore.resample('H').interpolate()
 gsoWeatherCore.head()
 
 
-# In[49]:
+# In[9]:
 
 # Now if we resample this to daily or monthly aggregate values, some columns
 # need to have their values averaged, and others need to be summed.
@@ -114,7 +114,7 @@ matrixDaily = pd.DataFrame(dailyAggregate, columns=['Utilization(%)']).join(dail
 matrixMonthly = pd.DataFrame(monthlyAggregate, columns=['Utilization(%)']).join(monthlyWeather, how='inner')
 
 
-# In[50]:
+# In[10]:
 
 # It might be interesting to look at this data by each day of the week, too.
 daysOfWeek = [ 'Monday'
@@ -128,19 +128,19 @@ daysOfWeek = [ 'Monday'
 matrixDaily['Day of week'] = [daysOfWeek[d] for d in matrixDaily.index.dayofweek]
 
 
-# In[51]:
+# In[11]:
 
 # Summary by day of week...
 matrixDaily.groupby(by='Day of week').mean()
 
 
-# In[52]:
+# In[12]:
 
 # When considering the entire dataset, there is no correlation between utilization and outside temperature.
 matrixHourly[['Utilization(%)','HOURLYDRYBULBTEMPF']].corr()
 
 
-# In[53]:
+# In[13]:
 
 def hexPlot(x, y, title, xlabel, ylabel):
     fig = plt.figure(figsize=(16,16))
@@ -152,14 +152,14 @@ def hexPlot(x, y, title, xlabel, ylabel):
     cb.set_label('log(N)')
 
 
-# In[54]:
+# In[14]:
 
 x = matrixHourly['HOURLYDRYBULBTEMPF']
 y = matrixHourly['Utilization(%)']
 #hexPlot(x, y, 'Aggregate computer use vs. temperature, hourly', 'Temperature(F)', 'Use(%)')
 
 
-# In[55]:
+# In[15]:
 
 merged = gsoWeatherInterp[['HOURLYDRYBULBTEMPF']].join(utilization, how='inner')
 merged.info()
@@ -172,19 +172,19 @@ usage = np.hstack([x.values for (_,x) in computerUsage.iteritems()])
 #hexPlot(temps, usage, 'Individual computer use vs. temperature, hourly', 'Temperature(F)', 'Use(%)')
 
 
-# In[56]:
+# In[16]:
 
 import seaborn as sns
 
 matrixHourly.corr()
 
 
-# In[57]:
+# In[17]:
 
 sns.heatmap(matrixHourly.corr())
 
 
-# In[58]:
+# In[18]:
 
 utilization = utilization[1:]
 gsoWeatherInterp = gsoWeatherInterp[1:]
@@ -192,15 +192,113 @@ print(utilization.head())
 print(gsoWeatherInterp.head())
 
 
-# In[71]:
+# In[19]:
 
 stacked = utilization.join(gsoWeatherInterp, how='inner')
 stacked = (stacked - stacked.mean()) / stacked.std()
 cc = stacked.corr()
 
 
-# In[74]:
+# ## Correlation heat matrix of individual computer use and hourly weather
+
+# In[20]:
 
 fig, ax = plt.subplots(figsize=(75,75))
 sns.heatmap(cc, ax=ax)
+
+
+# In[46]:
+
+attributes = pd.read_csv(os.path.join('..', 'data', 'computerAttributes.csv'))
+attributes = attributes[attributes['computerName']!='RRK001']
+
+
+# In[47]:
+
+locations = attributes[['computerName', 'location']].groupby(by='location')
+
+
+# In[55]:
+
+groups = {}
+for (k, vs) in locations:
+    stacked_ = utilization[vs['computerName'].values].join(gsoWeatherInterp, how='inner')
+    stacked_ = (stacked_ - stacked_.mean()) / stacked_.std()
+    groups[k] = stacked_
+groups.keys()
+
+
+# ## Groups along the main diagonal
+# Computers are grouped by 'location' attribute of `computerAttributes.csv`.
+
+# ### Reading rooms
+
+# In[54]:
+
+_, ax = plt.subplots(figsize=(16,16))
+sns.heatmap(groups['Reading Room'].corr(), ax=ax)
+
+
+# ### Checkout desk
+
+# In[56]:
+
+_, ax = plt.subplots(figsize=(16,16))
+sns.heatmap(groups['Checkout Desk'].corr(), ax=ax)
+
+
+# ### DMC
+
+# In[57]:
+
+_, ax = plt.subplots(figsize=(16,16))
+sns.heatmap(groups['DMC'].corr(), ax=ax)
+
+
+# ### Information commons
+
+# In[58]:
+
+_, ax = plt.subplots(figsize=(16,16))
+sns.heatmap(groups['Info Commons'].corr(), ax=ax)
+
+
+# ### RIS
+
+# In[59]:
+
+_, ax = plt.subplots(figsize=(16,16))
+sns.heatmap(groups['RIS'].corr(), ax=ax)
+
+
+# ### Music library
+
+# In[60]:
+
+_, ax = plt.subplots(figsize=(16,16))
+sns.heatmap(groups['Music Library'].corr(), ax=ax)
+
+
+# ### Tower
+
+# In[61]:
+
+_, ax = plt.subplots(figsize=(16,16))
+sns.heatmap(groups['Tower'].corr(), ax=ax)
+
+
+# ### CITI lab
+
+# In[62]:
+
+_, ax = plt.subplots(figsize=(16,16))
+sns.heatmap(groups['CITI Lab'].corr(), ax=ax)
+
+
+# ### Linking lab
+
+# In[63]:
+
+_, ax = plt.subplots(figsize=(16,16))
+sns.heatmap(groups['Linking Lobby'].corr(), ax=ax)
 
