@@ -7,11 +7,13 @@
 
 # In[ ]:
 
+
 import pandas as pd
 import numpy as np
 
 
 # In[ ]:
+
 
 import gzip
 import pickle
@@ -21,6 +23,7 @@ import pickle
 
 # In[ ]:
 
+
 with gzip.open(r'../data/LibData.pkl.gz') as f:
     libraryData = pickle.load(f)
 
@@ -29,12 +32,14 @@ with gzip.open(r'../data/LibData.pkl.gz') as f:
 
 # In[ ]:
 
+
 libraryData.info()
 
 
 # This is a grouping of the library data by average per hour using arbitrary endpoints.
 
 # In[ ]:
+
 
 startDate = pd.to_datetime("2016-01-01")
 endDate = pd.to_datetime("2017-12-31")
@@ -45,15 +50,18 @@ dateMask = (libraryData.index > startDate) & (libraryData.index < endDate)
 
 # In[ ]:
 
+
 compAttrs = pd.read_csv(r'../data/computerAttributes.csv',header=0)
 
 
 # In[ ]:
 
+
 compAttrs.info()
 
 
 # In[ ]:
+
 
 booleanCols = ["requiresLogon",
                "isDesktop",
@@ -70,15 +78,18 @@ booleanCols = ["requiresLogon",
 
 # In[ ]:
 
+
 attrsNames = compAttrs[compAttrs.requiresLogon == True].computerName
 
 
 # In[ ]:
 
+
 libraryMeans = libraryData[dateMask].groupby(libraryData[dateMask].index.hour).mean()*100
 
 
 # In[ ]:
+
 
 libraryMeans.info()
 
@@ -87,11 +98,13 @@ libraryMeans.info()
 
 # In[ ]:
 
+
 meansUnstacked = libraryMeans.unstack().reset_index()
 meansUnstacked.columns = ["comps","hour","means"]
 
 
 # In[ ]:
+
 
 meansUnstackedMerged = meansUnstacked.merge(compAttrs, left_on='comps',right_on='computerName')
 
@@ -99,6 +112,7 @@ meansUnstackedMerged = meansUnstacked.merge(compAttrs, left_on='comps',right_on=
 # Since the number of machines in the later graph might change, going ahead here and setting variables based on the count of machines returned in the dataframe above:
 
 # In[ ]:
+
 
 machineCount = meansUnstackedMerged.comps.unique().size
 recordCount = meansUnstackedMerged.index.size
@@ -109,6 +123,7 @@ hourCount = 24
 
 # In[ ]:
 
+
 from bokeh.layouts import row, column
 from bokeh.models import BoxSelectTool, LassoSelectTool, Spacer, FuncTickFormatter, FixedTicker, HoverTool, ColumnDataSource
 from bokeh.plotting import figure, output_file, output_notebook, show, save
@@ -118,6 +133,7 @@ output_notebook()
 # Bokeh allows a number of tools included in the tool bar adjacent to the graph. Testing the tools available and configurations for each. Hover, in this case, uses the data from the ColumnDataSource to populate the tooltips.
 
 # In[ ]:
+
 
 hover = HoverTool(
     tooltips=[
@@ -135,12 +151,14 @@ TOOLS=[hover,"crosshair,pan,wheel_zoom,box_zoom,reset,tap,save,box_select,poly_s
 
 # In[ ]:
 
+
 source = ColumnDataSource.from_df(meansUnstackedMerged)
 
 
 # These are the basic commands to create the graph known as `mainGraph`. The `select()` commands are perceived to improve performance on large datasets
 
 # In[ ]:
+
 
 mainGraph = figure(tools=TOOLS, plot_width=900, plot_height=600,
                      min_border=10, min_border_left=50,
@@ -157,6 +175,7 @@ mainGraph.select(LassoSelectTool).select_every_mousemove = False
 
 # In[ ]:
 
+
 mainGraph.yaxis.formatter = FuncTickFormatter(code="""return Math.floor(tick)+':00'""")
 mainGraph.yaxis.ticker = FixedTicker(ticks = range(0,24))
 
@@ -164,6 +183,7 @@ mainGraph.yaxis.ticker = FixedTicker(ticks = range(0,24))
 # Formatting the xaxis requires aligning the computernames to the values within the unstacked dataframe. This is omitted for now. 
 
 # In[ ]:
+
 
 keys=range(0,recordCount,hourCount)
 values=list(meansUnstackedMerged.comps.unique())
@@ -173,6 +193,7 @@ mainGraph.xaxis.major_label_overrides = graphCompIndex
 
 
 # In[ ]:
+
 
 mainGraph.scatter("index","hour",radius="means",color="blue",alpha=.4,source=source)
 #output_file("./AvgPercentUtil.html", title='Library Usage: Average Percent Utilization per Hour')
