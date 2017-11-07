@@ -194,31 +194,35 @@ print(gsoWeatherInterp.head())
 
 # In[19]:
 
-stacked = utilization.join(gsoWeatherInterp, how='inner')
-stacked = (stacked - stacked.mean()) / stacked.std()
-cc = stacked.corr()
+attributes = pd.read_csv(os.path.join('..', 'data', 'computerAttributes.csv'))
+attributes.index = attributes['computerName']
+machinesOfInterest = [x for x in attributes.index if attributes.loc[x]['requiresLogon']==True]
+
+
+# In[20]:
+
+stacked = utilization[machinesOfInterest].join(gsoWeatherInterp, how='inner')
+# Only look at records occuring while classes are in session.  This doesn't account for things like spring-break (yet).
+# Grab records from 01-17 (classes begin) to 05-12 (last day of class), and from 08-15 (classes begin) to 12-05 (last day of class).
+# These dates were determined from the 2016 academic calendar, and may be slightly different for other years.
+filtered = stacked[((stacked.index.dayofyear >= 17) & (stacked.index.dayofyear <= 131)) | ((stacked.index.dayofyear >= 233) & (stacked.index.dayofyear <= 338))]
+cc = filtered.corr()
 
 
 # ## Correlation heat matrix of individual computer use and hourly weather
 
-# In[20]:
+# In[21]:
 
 fig, ax = plt.subplots(figsize=(75,75))
 sns.heatmap(cc, ax=ax)
 
 
-# In[46]:
+# In[22]:
 
-attributes = pd.read_csv(os.path.join('..', 'data', 'computerAttributes.csv'))
-attributes = attributes[attributes['computerName']!='RRK001']
-
-
-# In[47]:
-
-locations = attributes[['computerName', 'location']].groupby(by='location')
+locations = attributes.loc[machinesOfInterest][['computerName', 'location']].groupby(by='location')
 
 
-# In[55]:
+# In[23]:
 
 groups = {}
 for (k, vs) in locations:
@@ -233,7 +237,7 @@ groups.keys()
 
 # ### Reading rooms
 
-# In[54]:
+# In[24]:
 
 _, ax = plt.subplots(figsize=(16,16))
 sns.heatmap(groups['Reading Room'].corr(), ax=ax)
@@ -241,7 +245,7 @@ sns.heatmap(groups['Reading Room'].corr(), ax=ax)
 
 # ### Checkout desk
 
-# In[56]:
+# In[25]:
 
 _, ax = plt.subplots(figsize=(16,16))
 sns.heatmap(groups['Checkout Desk'].corr(), ax=ax)
@@ -249,7 +253,7 @@ sns.heatmap(groups['Checkout Desk'].corr(), ax=ax)
 
 # ### DMC
 
-# In[57]:
+# In[26]:
 
 _, ax = plt.subplots(figsize=(16,16))
 sns.heatmap(groups['DMC'].corr(), ax=ax)
@@ -257,7 +261,7 @@ sns.heatmap(groups['DMC'].corr(), ax=ax)
 
 # ### Information commons
 
-# In[58]:
+# In[27]:
 
 _, ax = plt.subplots(figsize=(16,16))
 sns.heatmap(groups['Info Commons'].corr(), ax=ax)
@@ -265,7 +269,7 @@ sns.heatmap(groups['Info Commons'].corr(), ax=ax)
 
 # ### RIS
 
-# In[59]:
+# In[28]:
 
 _, ax = plt.subplots(figsize=(16,16))
 sns.heatmap(groups['RIS'].corr(), ax=ax)
@@ -273,7 +277,7 @@ sns.heatmap(groups['RIS'].corr(), ax=ax)
 
 # ### Music library
 
-# In[60]:
+# In[29]:
 
 _, ax = plt.subplots(figsize=(16,16))
 sns.heatmap(groups['Music Library'].corr(), ax=ax)
@@ -281,7 +285,7 @@ sns.heatmap(groups['Music Library'].corr(), ax=ax)
 
 # ### Tower
 
-# In[61]:
+# In[30]:
 
 _, ax = plt.subplots(figsize=(16,16))
 sns.heatmap(groups['Tower'].corr(), ax=ax)
@@ -289,16 +293,63 @@ sns.heatmap(groups['Tower'].corr(), ax=ax)
 
 # ### CITI lab
 
-# In[62]:
+# In[31]:
 
 _, ax = plt.subplots(figsize=(16,16))
 sns.heatmap(groups['CITI Lab'].corr(), ax=ax)
 
 
-# ### Linking lab
+# ## Comparing usage on rainy vs. non-rainy days
 
-# In[63]:
+# In[32]:
 
-_, ax = plt.subplots(figsize=(16,16))
-sns.heatmap(groups['Linking Lobby'].corr(), ax=ax)
+rainy = filtered[filtered['HOURLYPrecip'] > 0.01]
+dry = filtered[filtered['HOURLYPrecip'] <= 0.01]
+
+
+# In[33]:
+
+print(rainy.shape)
+print(dry.shape)
+print(filtered.shape)
+
+
+# ### Average use per computer
+
+# In[36]:
+
+from scipy import stats
+print(stats.ttest_ind(rainy.mean(axis=0), dry.mean(axis=0)))
+print(stats.ttest_rel(rainy.mean(axis=0), dry.mean(axis=0)))
+
+
+# ### Hourly use per computer
+
+# In[37]:
+
+test_results = {}
+for x in machinesOfInterest:
+    test_results[x] = stats.ttest_ind(rainy[x].values, dry[x].values, equal_var=False)
+
+
+# In[38]:
+
+for (computer, test_result) in sorted(test_results.iteritems(), key=lambda x: x[1].pvalue, reverse=True):
+    print(computer + ":")
+    print(test_result)
+
+
+# ## Average rainy-day use of machines near windows vs. not
+
+# In[39]:
+
+rainy_with_window = rainy[[x for x in machinesOfInterest if attributes.loc[x]['adjacentWindow']==True]].mean(axis=0)
+rainy_without_window = rainy[[x for x in machinesOfInterest if attributes.loc[x]['adjacentWindow']==False]].mean(axis=0)
+print(rainy_with_window.shape)
+print(rainy_without_window.shape)
+
+
+# In[40]:
+
+stats.ttest_ind(rainy_without_window, rainy_with_window)
 
