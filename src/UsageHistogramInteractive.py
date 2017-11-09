@@ -7,13 +7,11 @@
 
 # In[ ]:
 
-
 import pandas as pd
 import numpy as np
 
 
 # In[ ]:
-
 
 import gzip
 import pickle
@@ -23,7 +21,6 @@ import pickle
 
 # In[ ]:
 
-
 with gzip.open(r'../data/LibData.pkl.gz') as f:
     libraryData = pickle.load(f)
 
@@ -32,7 +29,6 @@ with gzip.open(r'../data/LibData.pkl.gz') as f:
 
 # In[ ]:
 
-
 libraryData.info()
 
 
@@ -40,8 +36,7 @@ libraryData.info()
 
 # In[ ]:
 
-
-startDate = pd.to_datetime("2017-01-01")
+startDate = pd.to_datetime("2014-01-01")
 endDate = pd.to_datetime("2017-12-31")
 dateMask = (libraryData.index > startDate) & (libraryData.index < endDate)
 
@@ -50,18 +45,15 @@ dateMask = (libraryData.index > startDate) & (libraryData.index < endDate)
 
 # In[ ]:
 
-
 compAttrs = pd.read_csv(r'../data/computerAttributes.csv',header=0)
 
 
 # In[ ]:
 
-
 compAttrs.info()
 
 
 # In[ ]:
-
 
 booleanCols = ["requiresLogon",
                "isDesktop",
@@ -78,10 +70,9 @@ booleanCols = ["requiresLogon",
 
 # In[ ]:
 
-
 attrsNamesMask = compAttrs[(compAttrs.requiresLogon       == True)
                          & (compAttrs.isDesktop           == True)
-                         & (compAttrs.inJackson           == False)
+                         & (compAttrs.inJackson           == True)
 #                          & (compAttrs.is245               == True)
 #                          & (compAttrs.floor               == 2)  #this one doesn't work yet.
 #                          & (compAttrs.largeMonitor        == True)
@@ -94,18 +85,20 @@ attrsNamesMask = compAttrs[(compAttrs.requiresLogon       == True)
 
 # In[ ]:
 
-
 libraryMeans = libraryData[dateMask].groupby(libraryData[dateMask].index.hour).mean()*100
 
 
 # In[ ]:
-
 
 libraryMeansNameMask = libraryMeans.loc[:,attrsNamesMask.values]
 
 
 # In[ ]:
 
+libraryMeansNameMask.head()
+
+
+# In[ ]:
 
 libraryMeansNameMask.info()
 
@@ -114,30 +107,31 @@ libraryMeansNameMask.info()
 
 # In[ ]:
 
-
 meansUnstacked = libraryMeansNameMask.unstack().reset_index()
 meansUnstacked.columns = ["comps","hour","means"]
 
 
-# In[ ]:
-
-
-meansUnstacked
-
+# Having an issue where the incrementing of the index is causing the scatter plot to shift over one. Experimenting with getting the index values in a merge.
 
 # In[ ]:
 
+attrsNamesMask = attrsNamesMask.reset_index().drop('index',axis=1)
+attrsNamesMask['x_vals'] = attrsNamesMask.index*24
+attrsNamesMask.head()
 
-#meansUnstackedMerged = meansUnstacked.merge(compAttrs, left_on='comps',right_on='computerName')
+
+# In[ ]:
+
+meansUnstackedMerged = meansUnstacked.merge(attrsNamesMask, left_on='comps',right_on='computerName').drop('computerName',axis=1)
+meansUnstackedMerged.head()
 
 
 # Since the number of machines in the later graph might change, going ahead here and setting variables based on the count of machines returned in the dataframe above:
 
 # In[ ]:
 
-
-machineCount = meansUnstacked.comps.unique().size
-recordCount = meansUnstacked.index.size
+machineCount = meansUnstackedMerged.comps.unique().size
+recordCount = meansUnstackedMerged.index.size
 hourCount = 24
 print machineCount * hourCount
 print recordCount
@@ -147,9 +141,18 @@ print recordCount
 
 # In[ ]:
 
-
 from bokeh.layouts import row, column
-from bokeh.models import BoxSelectTool, LassoSelectTool, Spacer, FuncTickFormatter, FixedTicker, HoverTool, ColumnDataSource
+from bokeh.models import(
+                BoxSelectTool, 
+                LassoSelectTool, 
+                Spacer, 
+                FuncTickFormatter, 
+                FixedTicker, 
+                HoverTool, 
+                ColumnDataSource, 
+                LinearColorMapper,
+                ColorBar, 
+                BasicTicker, PrintfTickFormatter)
 from bokeh.plotting import figure, output_file, output_notebook, show, save
 output_notebook()
 
@@ -158,14 +161,11 @@ output_notebook()
 
 # In[ ]:
 
-
 hover = HoverTool(
     tooltips=[
         ("Computer", "@comps"),
         ("Hour", "$y{0}:00"),
-        ("Pct Use","@means"),
-        ("x", "$x"),
-        ("y", "$y")
+        ("Pct Use","@means")
     ],
     formatters={"Hour":"datetime"}
 )
@@ -177,14 +177,18 @@ TOOLS=[hover,"crosshair,pan,wheel_zoom,box_zoom,reset,tap,save,box_select,poly_s
 
 # In[ ]:
 
+source = ColumnDataSource.from_df(meansUnstackedMerged)
 
-source = ColumnDataSource.from_df(meansUnstacked)
+
+# In[ ]:
+
+colors = ["#1c204e","#232863","#2a3079","#30388e","#3740a4","#7c7c7c","#8a8a8a","#989898","#a6a6a6"][::-1]
+mapper = LinearColorMapper(palette=colors, low=meansUnstackedMerged.means.min(), high=meansUnstackedMerged.means.max())
 
 
 # These are the basic commands to create the graph known as `mainGraph`. The `select()` commands are perceived to improve performance on large datasets
 
 # In[ ]:
-
 
 mainGraph = figure(tools=TOOLS, plot_width=900, plot_height=600,
                      min_border=10, min_border_left=50,
@@ -201,7 +205,6 @@ mainGraph.select(LassoSelectTool).select_every_mousemove = False
 
 # In[ ]:
 
-
 mainGraph.yaxis.formatter = FuncTickFormatter(code="""return Math.floor(tick)+':00'""")
 mainGraph.yaxis.ticker = FixedTicker(ticks = range(0,24))
 
@@ -210,24 +213,33 @@ mainGraph.yaxis.ticker = FixedTicker(ticks = range(0,24))
 
 # In[ ]:
 
-
-keys=range(0,recordCount,hourCount)
-values=list(meansUnstackedMerged.comps.unique())
-graphCompIndex = dict(zip(keys,values))
-mainGraph.xaxis.ticker = FixedTicker(ticks = range(0,recordCount,hourCount))
-mainGraph.xaxis.major_label_overrides = graphCompIndex
+# keys=range(0,recordCount,hourCount)
+# values=list(meansUnstacked.comps.unique())
+# graphCompIndex = dict(zip(keys,values))
+# mainGraph.xaxis.ticker = FixedTicker(ticks = range(0,recordCount,hourCount))
+# mainGraph.xaxis.major_label_overrides = graphCompIndex
 
 
 # In[ ]:
 
-
-mainGraph.scatter("index","hour",radius=5,color="blue",alpha=.4,source=source)
-#output_file("./AvgPercentUtil.html", title='Library Usage: Average Percent Utilization per Hour')
+# mainGraph.scatter("x_vals","hour",radius=5,color="blue",alpha=.4,source=source)
+mainGraph.rect(x="x_vals", y="hour", 
+               width=24, height=1,
+               source=source,
+               fill_color={'field': 'means', 'transform': mapper},
+              line_color=None)
+# output_file("./AvgPercentUtil.html", title='Library Usage: Average Percent Utilization per Hour')
+color_bar = ColorBar(color_mapper=mapper, major_label_text_font_size="10pt",
+                     ticker=BasicTicker(desired_num_ticks=len(colors)),
+                     formatter=PrintfTickFormatter(format="%d%%"),
+                     label_standoff=10, border_line_color=None, location=(0, 0))
+mainGraph.add_layout(color_bar, 'right')
 show(mainGraph)
 
 
-# In[ ]:
+# Below, manually adding the output from the graph above so that it will preview in GitHub correctly.
 
+# In[ ]:
 
 from IPython.display import Image
 
