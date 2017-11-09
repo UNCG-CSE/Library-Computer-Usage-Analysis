@@ -41,7 +41,7 @@ libraryData.info()
 # In[ ]:
 
 
-startDate = pd.to_datetime("2016-01-01")
+startDate = pd.to_datetime("2017-01-01")
 endDate = pd.to_datetime("2017-12-31")
 dateMask = (libraryData.index > startDate) & (libraryData.index < endDate)
 
@@ -74,12 +74,22 @@ booleanCols = ["requiresLogon",
                "inQuietArea"]
 
 
-# Using the attributes from above as booleans, create a mask for the `compAttrs` dataframe, and return the names.
+# Using the attributes from above as booleans, create a mask for the `compAttrs` dataframe, and return the names. Testing various attributes in the following array.
 
 # In[ ]:
 
 
-attrsNames = compAttrs[compAttrs.requiresLogon == True].computerName
+attrsNamesMask = compAttrs[(compAttrs.requiresLogon       == True)
+                         & (compAttrs.isDesktop           == True)
+                         & (compAttrs.inJackson           == False)
+#                          & (compAttrs.is245               == True)
+#                          & (compAttrs.floor               == 2)  #this one doesn't work yet.
+#                          & (compAttrs.largeMonitor        == True)
+#                          & (compAttrs.adjacentWindow      == True)
+#                          & (compAttrs.collaborativeSpace  == True)
+#                          & (compAttrs.roomIsolated        == True)
+#                          & (compAttrs.inQuietArea         == True)
+                           ].computerName
 
 
 # In[ ]:
@@ -91,7 +101,13 @@ libraryMeans = libraryData[dateMask].groupby(libraryData[dateMask].index.hour).m
 # In[ ]:
 
 
-libraryMeans.info()
+libraryMeansNameMask = libraryMeans.loc[:,attrsNamesMask.values]
+
+
+# In[ ]:
+
+
+libraryMeansNameMask.info()
 
 
 # Since the format is a 24 (hours) x 312 (computers) matrix, and the scatter plot is looking for single-dimension arrays, the data needs to be unstacked into these arrays.
@@ -99,14 +115,20 @@ libraryMeans.info()
 # In[ ]:
 
 
-meansUnstacked = libraryMeans.unstack().reset_index()
+meansUnstacked = libraryMeansNameMask.unstack().reset_index()
 meansUnstacked.columns = ["comps","hour","means"]
 
 
 # In[ ]:
 
 
-meansUnstackedMerged = meansUnstacked.merge(compAttrs, left_on='comps',right_on='computerName')
+meansUnstacked
+
+
+# In[ ]:
+
+
+#meansUnstackedMerged = meansUnstacked.merge(compAttrs, left_on='comps',right_on='computerName')
 
 
 # Since the number of machines in the later graph might change, going ahead here and setting variables based on the count of machines returned in the dataframe above:
@@ -114,9 +136,11 @@ meansUnstackedMerged = meansUnstacked.merge(compAttrs, left_on='comps',right_on=
 # In[ ]:
 
 
-machineCount = meansUnstackedMerged.comps.unique().size
-recordCount = meansUnstackedMerged.index.size
+machineCount = meansUnstacked.comps.unique().size
+recordCount = meansUnstacked.index.size
 hourCount = 24
+print machineCount * hourCount
+print recordCount
 
 
 # The Bokeh libraries necessary for this graph:
@@ -139,7 +163,9 @@ hover = HoverTool(
     tooltips=[
         ("Computer", "@comps"),
         ("Hour", "$y{0}:00"),
-        ("Pct Use","@means")
+        ("Pct Use","@means"),
+        ("x", "$x"),
+        ("y", "$y")
     ],
     formatters={"Hour":"datetime"}
 )
@@ -152,7 +178,7 @@ TOOLS=[hover,"crosshair,pan,wheel_zoom,box_zoom,reset,tap,save,box_select,poly_s
 # In[ ]:
 
 
-source = ColumnDataSource.from_df(meansUnstackedMerged)
+source = ColumnDataSource.from_df(meansUnstacked)
 
 
 # These are the basic commands to create the graph known as `mainGraph`. The `select()` commands are perceived to improve performance on large datasets
@@ -195,7 +221,15 @@ mainGraph.xaxis.major_label_overrides = graphCompIndex
 # In[ ]:
 
 
-mainGraph.scatter("index","hour",radius="means",color="blue",alpha=.4,source=source)
+mainGraph.scatter("index","hour",radius=5,color="blue",alpha=.4,source=source)
 #output_file("./AvgPercentUtil.html", title='Library Usage: Average Percent Utilization per Hour')
 show(mainGraph)
 
+
+# In[ ]:
+
+
+from IPython.display import Image
+
+
+# ![title](./avgPercentUtil.png)
