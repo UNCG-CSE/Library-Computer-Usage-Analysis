@@ -7,5 +7,5 @@
 * Summary: Break times and exam dates clearly visible in gate counts, as are weekends
 
 ## UsageVsWeather
-* Usage correlation for local temperature and precipitation
-* Summary: Neither heat nor rain have any effect on the hours of computer use
+* Usage correlation for local temperature and precipitation, for overall use and for specific regions of the library
+* Summary: Neither heat nor rain have any significant effect on the hours of computer use
