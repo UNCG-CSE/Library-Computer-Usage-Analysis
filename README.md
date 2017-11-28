@@ -11,6 +11,8 @@
 
 ### LibraryGateCounts: Shows the total population in Jackson library each day and its correlation to semester schedule, as well as use of particular areas in the library.
 
+### UsageByMachine: Shows the total usage of each machine in Jackson Library by a percentage of each hour. Visualization shows that some regions are more heavily used than others, and at what times.
+
 ### UsageVsWeather: Shows the relation between total use of a given computer vs local temperature and rainfall, broken down by region. Results indicate that weather has no meaningful effect on computer use.
 
 ### WindowAndMonitorUsageCorrelations: Shows that computers with dual monitors are used more heavily than those with only one from spring 2016 - fall 2017, and that a computer's adjacency to a window has no effect on computer use during the same period.
