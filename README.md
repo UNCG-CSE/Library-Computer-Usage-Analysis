@@ -38,5 +38,5 @@ semesters.csv: Lists the start and end date of each semester.
 
 1052640.csv: One half of weather data converted to readable format.
 
-1101311.csv: Other half of weather data converted to readable formate.
+1101311.csv: Other half of weather data converted to readable format.
 
