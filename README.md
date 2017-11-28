@@ -1,5 +1,7 @@
 # Library-Computer-Usage-Analysis
 
+## Contributors: Brown Biggers, Michael Ellis, Nickolas Lloyd, Patricia Tanzer
+
 
 
 
