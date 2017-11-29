@@ -7,8 +7,8 @@
 
 ## Goals: Establish which characteristics make a computer more likely to be used, including campus scheduling, equipment configuration, placement, population in the library, and area weather. Using this data, this project would like to use machine learning to determine the best placement of computers for future allocation, and possible reconfiguration of equipment and space.
 
-### Suggested Reading Order: To get the highlights, look at the Presentation powerpoint (not yet available). 
-#### For more detailed information and examples, begin with LibraryGateCounts. Move to UsageByMachine, then UsageVsGateCounts. Follow that with UsageVsWeather and WindowAndMonitorUsageCorrelations. Finally PredictUsageByAttributes finishes off the set.
+### Suggested Reading Order: To get the highlights, look at the Presentation pdf. 
+#### For more detailed information and examples, go to the src folder, and begin with LibraryGateCounts. Move to UsageByMachine, then UsageVsGateCounts. Follow that with UsageVsWeather and WindowAndMonitorUsageCorrelations. Finally PredictUsageByAttributes finishes off the set.
 
 ## Src:
 
